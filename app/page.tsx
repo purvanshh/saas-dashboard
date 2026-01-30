@@ -14,6 +14,7 @@ import { PermissionGate } from './components/ui/PermissionGate';
 import { DisabledAction } from './components/ui/DisabledAction';
 import { AccessDenied } from './components/ui/AccessDenied';
 import { WelcomeState, TenantIsolationNotice } from './components/ui/EmptyState';
+import { SystemConstraints } from './components/dashboard/SystemConstraints';
 import { PermissionDeniedModal } from './components/ui/PermissionDeniedModal';
 
 export default function Dashboard() {
@@ -166,6 +167,9 @@ export default function Dashboard() {
           <section style={{ marginBottom: '24px' }}>
             <KPIGrid />
           </section>
+
+          {/* System Constraints - Real operational limits */}
+          <SystemConstraints />
 
           {/* Insight Card - Actionable Analytics */}
           <section style={{ marginBottom: '24px' }}>
