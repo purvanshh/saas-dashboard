@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Multi-Tenant SaaS Dashboard
 
-## Getting Started
+A production-ready multi-tenant B2B SaaS dashboard with role-based access control.
 
-First, run the development server:
+## Project Structure
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+saas-dashboard/
+├── frontend/          # Next.js 16 + React 19 + Tailwind CSS 4
+│   ├── app/           # App router pages and components
+│   ├── public/        # Static assets
+│   └── package.json   # Frontend dependencies
+├── backend/           # Express/Node.js API server
+│   ├── src/           # API source code
+│   ├── sql/           # Database schemas
+│   └── package.json   # Backend dependencies
+└── package.json       # Root monorepo scripts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Quick Start
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Install all dependencies
+npm run install:all
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Run both frontend and backend
+npm run dev
 
-## Learn More
+# Or run individually
+npm run dev:frontend   # http://localhost:3000
+npm run dev:backend    # http://localhost:4000
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Multi-tenancy**: Organization switching with tenant-scoped data
+- **RBAC**: Admin / Manager / Viewer role-based access control
+- **Permission UI**: Disabled actions, access denied states
+- **Audit Logs**: Track team activity
+- **Actionable Insights**: Analytics explaining metric changes
