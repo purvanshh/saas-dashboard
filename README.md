@@ -87,22 +87,39 @@ The main application code.
    cd saas-dashboard
    ```
 
-2. Navigate to the frontend directory:
+2. Install all dependencies (monorepo setup):
    ```bash
-   cd frontend
+   npm run install:all
    ```
 
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-4. Start the development server:
+3. Start the development server:
    ```bash
    npm run dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Deployment
+
+#### Vercel (Recommended)
+This project is optimized for Vercel deployment:
+
+1. Connect your GitHub repository to Vercel
+2. Vercel will automatically detect the configuration and deploy
+3. The build process will install dependencies and build the frontend automatically
+
+#### Manual Build
+To build the project manually:
+
+```bash
+# Build frontend only
+npm run build
+
+# Build both frontend and backend
+npm run build:frontend && npm run build:backend
+```
+
+The built files will be in `frontend/.next/` for the frontend and `backend/dist/` for the backend.
 
 ---
 

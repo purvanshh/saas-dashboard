@@ -1,9 +1,13 @@
 import type { NextConfig } from "next";
-import path from "path";
 
 const nextConfig: NextConfig = {
+  // Explicitly set the root to silence the warning
   turbopack: {
-    root: path.resolve(__dirname, '..'),
+    root: process.cwd(),
+  },
+  // Optimize for production builds
+  experimental: {
+    optimizePackageImports: ['@supabase/supabase-js'],
   },
 };
 
