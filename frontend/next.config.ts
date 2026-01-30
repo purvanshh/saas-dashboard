@@ -1,13 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Explicitly set the root to silence the warning
-  turbopack: {
-    root: process.cwd(),
-  },
-  // Optimize for production builds
+  // Minimal configuration for Vercel deployment
   experimental: {
     optimizePackageImports: ['@supabase/supabase-js'],
+  },
+  // Ensure proper static export
+  trailingSlash: false,
+  // Disable image optimization for static export if needed
+  images: {
+    unoptimized: false,
   },
 };
 
