@@ -13,14 +13,19 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { supabase } from '../db/client';
-import { AuthenticatedRequest, User } from '../types';
+import { supabase, isMockMode } from '../db/client';
+import { AuthenticatedRequest, Database } from '../types';
+
+// Type for user row from database
+type UserRow = Database['public']['Tables']['users']['Row'];
 
 // JWT verification requires Supabase JWT secret
 const SUPABASE_JWT_SECRET = process.env.SUPABASE_JWT_SECRET;
 
-if (!SUPABASE_JWT_SECRET) {
+if (!SUPABASE_JWT_SECRET && !isMockMode) {
   throw new Error('SUPABASE_JWT_SECRET environment variable is required');
+} else if (!SUPABASE_JWT_SECRET) {
+  console.warn('⚠️  SUPABASE_JWT_SECRET not set - auth will be bypassed in mock mode');
 }
 
 /**
@@ -37,9 +42,21 @@ export async function authenticateUser(
   next: NextFunction
 ): Promise<void> {
   try {
+    // In mock mode without JWT secret, skip authentication
+    if (isMockMode && !SUPABASE_JWT_SECRET) {
+      // Attach a mock user for development
+      (req as unknown as AuthenticatedRequest).user = {
+        id: 'mock-user-id',
+        authId: 'mock-auth-id',
+        email: 'dev@example.com',
+      };
+      next();
+      return;
+    }
+
     // Extract token from Authorization header
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       res.status(401).json({
         error: {
@@ -57,7 +74,7 @@ export async function authenticateUser(
     let decodedToken: jwt.JwtPayload;
     try {
       decodedToken = jwt.verify(token, SUPABASE_JWT_SECRET!) as jwt.JwtPayload;
-    } catch (jwtError) {
+    } catch {
       res.status(401).json({
         error: {
           code: 'UNAUTHORIZED',
@@ -70,7 +87,7 @@ export async function authenticateUser(
 
     // Extract user ID from verified token
     const authId = decodedToken.sub;
-    
+
     if (!authId) {
       res.status(401).json({
         error: {
@@ -82,14 +99,27 @@ export async function authenticateUser(
       return;
     }
 
+    // Check if supabase is available
+    if (!supabase) {
+      res.status(503).json({
+        error: {
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Database not configured.',
+          status: 503,
+        },
+      });
+      return;
+    }
+
     // Fetch user from database
-    // This links the Supabase Auth user to our application user
-    const { data: userData, error: userError } = await supabase
+    const { data, error: userError } = await supabase
       .from('users')
       .select('*')
       .eq('auth_id', authId)
       .is('deleted_at', null)
       .single();
+
+    const userData = data as UserRow | null;
 
     if (userError || !userData) {
       console.error('User lookup failed:', userError);
@@ -103,19 +133,12 @@ export async function authenticateUser(
       return;
     }
 
-    // Convert DB format to application types
-    const user: User = {
+    // Attach user to request for downstream middleware
+    (req as unknown as AuthenticatedRequest).user = {
       id: userData.id,
       authId: userData.auth_id,
       email: userData.email,
-      name: userData.name,
-      avatarUrl: userData.avatar_url || undefined,
-      createdAt: new Date(userData.created_at),
-      updatedAt: new Date(userData.updated_at),
     };
-
-    // Attach user to request for downstream middleware
-    (req as AuthenticatedRequest).user = user;
 
     next();
   } catch (error) {
@@ -137,12 +160,23 @@ export async function authenticateUser(
  */
 export async function optionalAuth(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
+    // In mock mode, attach mock user
+    if (isMockMode && !SUPABASE_JWT_SECRET) {
+      (req as unknown as AuthenticatedRequest).user = {
+        id: 'mock-user-id',
+        authId: 'mock-auth-id',
+        email: 'dev@example.com',
+      };
+      next();
+      return;
+    }
+
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       next();
       return;
@@ -159,27 +193,25 @@ export async function optionalAuth(
     }
 
     const authId = decodedToken.sub;
-    if (!authId) {
+    if (!authId || !supabase) {
       next();
       return;
     }
 
-    const { data: userData } = await supabase
+    const { data } = await supabase
       .from('users')
       .select('*')
       .eq('auth_id', authId)
       .is('deleted_at', null)
       .single();
 
+    const userData = data as UserRow | null;
+
     if (userData) {
-      (req as AuthenticatedRequest).user = {
+      (req as unknown as AuthenticatedRequest).user = {
         id: userData.id,
         authId: userData.auth_id,
         email: userData.email,
-        name: userData.name,
-        avatarUrl: userData.avatar_url || undefined,
-        createdAt: new Date(userData.created_at),
-        updatedAt: new Date(userData.updated_at),
       };
     }
 

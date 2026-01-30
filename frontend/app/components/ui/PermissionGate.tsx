@@ -17,12 +17,15 @@ export function PermissionGate({
     requiredPermission,
     fallback = null,
 }: PermissionGateProps) {
-    const { role, hasPermission } = useAuth();
+    const { currentRole, hasPermission } = useAuth();
 
     // Check role requirement
     if (requiredRole) {
+        if (!currentRole) {
+            return <>{fallback}</>;
+        }
         const roleHierarchy: Role[] = ['admin', 'manager', 'viewer'];
-        const currentRoleIndex = roleHierarchy.indexOf(role);
+        const currentRoleIndex = roleHierarchy.indexOf(currentRole);
         const requiredRoleIndex = roleHierarchy.indexOf(requiredRole);
 
         if (currentRoleIndex > requiredRoleIndex) {

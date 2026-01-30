@@ -10,6 +10,7 @@ import { AuditFeed } from './components/dashboard/AuditFeed';
 import { InsightCard } from './components/dashboard/InsightCard';
 import { useTenant } from './contexts/TenantContext';
 import { useAuth } from './contexts/AuthContext';
+import { useToast } from './contexts/ToastContext';
 import { PermissionGate } from './components/ui/PermissionGate';
 import { DisabledAction } from './components/ui/DisabledAction';
 import { AccessDenied } from './components/ui/AccessDenied';
@@ -19,8 +20,9 @@ import { PermissionDeniedModal } from './components/ui/PermissionDeniedModal';
 
 export default function Dashboard() {
   const { currentOrganization } = useTenant();
-  const { role, hasPermission } = useAuth();
-  const isNewOrg = currentOrganization.isNew;
+  const { currentRole, hasPermission } = useAuth();
+  const { addToast } = useToast();
+  const isNewOrg = currentOrganization ? (currentOrganization as any).isNew || false : false;
   const [showPermissionDenied, setShowPermissionDenied] = React.useState(false);
 
   return (
@@ -43,8 +45,8 @@ export default function Dashboard() {
               margin: '4px 0 0 0'
             }}>
               {isNewOrg
-                ? `Let's get ${currentOrganization.name} up and running`
-                : `Welcome back! Here's what's happening at ${currentOrganization.name}`
+                ? `Let's get ${currentOrganization?.name || 'your organization'} up and running`
+                : `Welcome back! Here's what's happening at ${currentOrganization?.name || 'your organization'}`
               }
             </p>
           </div>
@@ -54,7 +56,10 @@ export default function Dashboard() {
               reason="Admin access required to export"
               disabled={!hasPermission('canManageOrg')}
             >
-              <button className="btn btn-secondary">
+              <button
+                className="btn btn-secondary"
+                onClick={() => addToast('Generating report... This may take a moment.', 'info')}
+              >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                   <polyline points="7 10 12 15 17 10" />
@@ -65,7 +70,10 @@ export default function Dashboard() {
             </DisabledAction>
 
             <PermissionGate requiredPermission="canCreate">
-              <button className="btn btn-primary">
+              <button
+                className="btn btn-primary"
+                onClick={() => addToast('Opening project creation wizard...', 'success')}
+              >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
@@ -77,7 +85,7 @@ export default function Dashboard() {
         </div>
 
         {/* Role-based notice for Viewers */}
-        {role === 'viewer' && (
+        {currentRole === 'viewer' && (
           <div
             style={{
               marginTop: '16px',
@@ -112,7 +120,7 @@ export default function Dashboard() {
       {/* New Organization Welcome State */}
       {isNewOrg ? (
         <>
-          <WelcomeState orgName={currentOrganization.name} />
+          <WelcomeState orgName={currentOrganization?.name || 'your organization'} />
 
           {/* Empty dashboard state */}
           <div style={{ marginTop: '24px' }}>
@@ -231,7 +239,10 @@ export default function Dashboard() {
             </div>
             <div className="card-body">
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                <button className="btn btn-secondary">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => addToast('Navigating to projects list...', 'info')}
+                >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z" />
                     <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
@@ -240,7 +251,10 @@ export default function Dashboard() {
                 </button>
 
                 <PermissionGate requiredPermission="canCreate">
-                  <button className="btn btn-primary">
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => addToast('Opening project creation wizard...', 'success')}
+                  >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <line x1="12" y1="5" x2="12" y2="19" />
                       <line x1="5" y1="12" x2="19" y2="12" />
@@ -251,7 +265,10 @@ export default function Dashboard() {
 
                 {/* Edit action - available to managers */}
                 <PermissionGate requiredPermission="canEdit">
-                  <button className="btn btn-secondary">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => addToast('Edit mode enabled. Select a project to edit.', 'info')}
+                  >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -264,6 +281,7 @@ export default function Dashboard() {
                 {hasPermission('canDelete') ? (
                   <button
                     className="btn btn-secondary"
+                    onClick={() => addToast('Simulating deletion... Project has been removed.', 'error')}
                     style={{
                       color: 'var(--red-600)',
                       borderColor: 'var(--red-200)',
@@ -302,7 +320,10 @@ export default function Dashboard() {
                   reason="You don't have permission to archive projects"
                   disabled={!hasPermission('canDelete')}
                 >
-                  <button className="btn btn-ghost">
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => addToast('Projects archived successfully.', 'info')}
+                  >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <polyline points="21 8 21 21 3 21 3 8" />
                       <rect x="1" y="3" width="22" height="5" />
@@ -357,7 +378,7 @@ export default function Dashboard() {
       </PermissionGate>
 
       {/* Viewer empty state for project management */}
-      {role === 'viewer' && (
+      {currentRole === 'viewer' && (
         <section style={{ marginTop: '24px' }}>
           <div className="card" style={{ padding: '20px' }}>
             <AccessDenied
@@ -375,7 +396,7 @@ export default function Dashboard() {
         onClose={() => setShowPermissionDenied(false)}
         action="delete projects"
         requiredRole="Admin"
-        currentRole={role === 'manager' ? 'Manager' : role === 'viewer' ? 'Viewer' : 'User'}
+        currentRole={currentRole === 'manager' ? 'Manager' : currentRole === 'viewer' ? 'Viewer' : 'User'}
       />
     </DashboardLayout>
   );

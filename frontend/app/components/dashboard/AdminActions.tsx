@@ -38,8 +38,8 @@ const icons: Record<string, React.ReactNode> = {
 };
 
 export function AdminActions() {
-    const { role } = useAuth();
-    const isAdmin = role === 'admin';
+    const { currentUser } = useAuth();
+    const isAdmin = currentUser?.role === 'admin';
     const [isExpanded, setIsExpanded] = useState(false);
 
     if (!isAdmin) {
@@ -48,7 +48,7 @@ export function AdminActions() {
 
     return (
         <div className="card">
-            <div 
+            <div
                 className="card-header"
                 style={{
                     cursor: 'pointer',
@@ -87,7 +87,7 @@ export function AdminActions() {
                     Administrative shortcuts • Click to {isExpanded ? 'collapse' : 'expand'}
                 </p>
             </div>
-            
+
             {isExpanded && (
                 <div className="card-body" style={{ paddingTop: '16px' }}>
                     <div

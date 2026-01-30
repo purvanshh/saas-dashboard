@@ -3,6 +3,7 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { navigationItems, canAccessNavItem, NavItem } from '../../lib/permissions';
+import { usePathname } from 'next/navigation';
 
 // Icons
 const icons: Record<string, React.ReactNode> = {
@@ -63,8 +64,8 @@ const icons: Record<string, React.ReactNode> = {
 };
 
 function NavItemComponent({ item, isActive }: { item: NavItem; isActive: boolean }) {
-    const { role } = useAuth();
-    const hasAccess = canAccessNavItem(role, item);
+    const { currentRole } = useAuth();
+    const hasAccess = currentRole ? canAccessNavItem(currentRole, item) : false;
 
     if (!hasAccess) {
         return (
@@ -138,6 +139,7 @@ function NavItemComponent({ item, isActive }: { item: NavItem; isActive: boolean
 }
 
 export function Sidebar() {
+    const pathname = usePathname();
     return (
         <aside
             style={{
@@ -222,7 +224,7 @@ export function Sidebar() {
                         <NavItemComponent
                             key={item.id}
                             item={item}
-                            isActive={item.id === 'dashboard'}
+                            isActive={pathname === item.href}
                         />
                     ))}
                 </div>
@@ -245,7 +247,7 @@ export function Sidebar() {
                         <NavItemComponent
                             key={item.id}
                             item={item}
-                            isActive={false}
+                            isActive={pathname === item.href}
                         />
                     ))}
                 </div>

@@ -5,9 +5,11 @@ import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { getRoleBadgeClass, getRoleLabel, Role } from '../../lib/permissions';
 
+const ALL_ROLES: Role[] = ['admin', 'manager', 'viewer'];
+
 export function TopNav() {
     const { currentOrganization, organizations, switchOrganization } = useTenant();
-    const { user, role, setRole } = useAuth();
+    const { currentUser, currentRole, setRole } = useAuth();
     const [orgDropdownOpen, setOrgDropdownOpen] = useState(false);
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
     const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
@@ -70,9 +72,9 @@ export function TopNav() {
                                 fontWeight: 700,
                             }}
                         >
-                            {currentOrganization.name[0]}
+                            {currentOrganization?.name?.[0]}
                         </div>
-                        <span>{currentOrganization.name}</span>
+                        <span>{currentOrganization?.name}</span>
                         <svg
                             width="16"
                             height="16"
@@ -109,46 +111,52 @@ export function TopNav() {
                             {organizations.map((org) => (
                                 <button
                                     key={org.id}
-                                    className={`dropdown-item ${org.id === currentOrganization.id ? 'active' : ''
-                                        }`}
+                                    className={`dropdown-item ${org.id === currentOrganization?.id ? 'active' : ''}`}
                                     onClick={() => {
                                         switchOrganization(org.id);
                                         setOrgDropdownOpen(false);
                                     }}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '12px' }}
                                 >
                                     <div
                                         style={{
-                                            width: '28px',
-                                            height: '28px',
+                                            width: '32px',
+                                            height: '32px',
                                             borderRadius: '6px',
                                             background:
                                                 org.id === 'org_1'
                                                     ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)'
                                                     : org.id === 'org_2'
                                                         ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-                                                        : 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                                        : org.id === 'org_3'
+                                                            ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+                                                            : 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             color: 'white',
-                                            fontSize: '12px',
+                                            fontSize: '14px',
                                             fontWeight: 700,
+                                            flexShrink: 0,
                                         }}
                                     >
                                         {org.name[0]}
                                     </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: 500 }}>{org.name}</div>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            {org.name}
+                                        </div>
                                         <div
                                             style={{
                                                 fontSize: '12px',
                                                 color: 'var(--foreground-muted)',
+                                                textTransform: 'capitalize',
                                             }}
                                         >
-                                            {org.memberCount} members • {org.plan}
+                                            {org.plan}
                                         </div>
                                     </div>
-                                    {org.id === currentOrganization.id && (
+                                    {org.id === currentOrganization?.id && (
                                         <svg
                                             width="16"
                                             height="16"
@@ -156,6 +164,7 @@ export function TopNav() {
                                             fill="none"
                                             stroke="var(--blue-600)"
                                             strokeWidth="2"
+                                            style={{ flexShrink: 0 }}
                                         >
                                             <path d="M20 6L9 17l-5-5" />
                                         </svg>
@@ -167,23 +176,26 @@ export function TopNav() {
                 </div>
             </div>
 
-            {/* Right section - Role badge, Demo role switcher, User menu */}
+            {/* Right section - Role badge, User menu */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                {/* Demo Role Switcher */}
+                {/* Role Switcher - for demo */}
                 <div className="dropdown" style={{ position: 'relative' }}>
                     <button
                         onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-                        className={`badge ${getRoleBadgeClass(role)}`}
-                        style={{
-                            cursor: 'pointer',
-                            border: 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                        }}
+                        className={`badge ${getRoleBadgeClass(currentRole)}`}
+                        style={{ cursor: 'pointer', border: 'none' }}
+                        title="Click to switch role (Demo)"
                     >
-                        <span>Role: {getRoleLabel(role)}</span>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        {getRoleLabel(currentRole)}
+                        <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            style={{ marginLeft: '4px' }}
+                        >
                             <path d="M6 9l6 6 6-6" />
                         </svg>
                     </button>
@@ -203,24 +215,21 @@ export function TopNav() {
                                     letterSpacing: '0.05em',
                                 }}
                             >
-                                Demo: Switch Role
+                                Switch Role (Demo)
                             </div>
-                            {(['admin', 'manager', 'viewer'] as Role[]).map((r) => (
+                            {ALL_ROLES.map((r) => (
                                 <button
                                     key={r}
-                                    className={`dropdown-item ${r === role ? 'active' : ''}`}
+                                    className={`dropdown-item ${r === currentRole ? 'active' : ''}`}
                                     onClick={() => {
                                         setRole(r);
                                         setRoleDropdownOpen(false);
                                     }}
                                 >
-                                    <span
-                                        className={`badge ${getRoleBadgeClass(r)}`}
-                                        style={{ padding: '2px 8px' }}
-                                    >
+                                    <span className={`badge ${getRoleBadgeClass(r)}`} style={{ marginRight: '8px' }}>
                                         {getRoleLabel(r)}
                                     </span>
-                                    {r === role && (
+                                    {r === currentRole && (
                                         <svg
                                             width="16"
                                             height="16"
@@ -228,7 +237,6 @@ export function TopNav() {
                                             fill="none"
                                             stroke="var(--blue-600)"
                                             strokeWidth="2"
-                                            style={{ marginLeft: 'auto' }}
                                         >
                                             <path d="M20 6L9 17l-5-5" />
                                         </svg>
@@ -276,7 +284,7 @@ export function TopNav() {
                                 fontWeight: 600,
                             }}
                         >
-                            {getInitials(user.name)}
+                            {getInitials(currentUser?.name || 'User')}
                         </div>
                         <div style={{ textAlign: 'left' }}>
                             <div
@@ -286,7 +294,7 @@ export function TopNav() {
                                     color: 'var(--foreground)',
                                 }}
                             >
-                                {user.name}
+                                {currentUser?.name}
                             </div>
                             <div
                                 style={{
@@ -294,7 +302,7 @@ export function TopNav() {
                                     color: 'var(--foreground-muted)',
                                 }}
                             >
-                                {user.email}
+                                {currentUser?.email}
                             </div>
                         </div>
                         <svg

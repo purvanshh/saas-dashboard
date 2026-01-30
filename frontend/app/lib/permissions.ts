@@ -91,5 +91,101 @@ export function getRoleBadgeClass(role: Role): string {
 }
 
 export function getRoleLabel(role: Role): string {
+  if (!role) return 'Unknown';
   return role.charAt(0).toUpperCase() + role.slice(1);
+}
+
+// ============================================
+// ACTION-LEVEL RBAC ENFORCEMENT
+// ============================================
+
+export type ActionType =
+  // Project actions
+  | 'project.create'
+  | 'project.edit'
+  | 'project.delete'
+  | 'project.archive'
+  | 'project.view'
+  // User actions
+  | 'user.invite'
+  | 'user.changeRole'
+  | 'user.deactivate'
+  | 'user.view'
+  // Admin actions
+  | 'billing.view'
+  | 'billing.edit'
+  | 'audit.view'
+  | 'settings.view'
+  | 'settings.edit'
+  | 'data.export';
+
+// Permission matrix for actions
+const actionPermissions: Record<ActionType, Role[]> = {
+  // Project actions
+  'project.create': ['admin', 'manager'],
+  'project.edit': ['admin', 'manager'],
+  'project.delete': ['admin'],
+  'project.archive': ['admin', 'manager'],
+  'project.view': ['admin', 'manager', 'viewer'],
+
+  // User actions
+  'user.invite': ['admin'],
+  'user.changeRole': ['admin'],
+  'user.deactivate': ['admin'],
+  'user.view': ['admin'],
+
+  // Admin actions
+  'billing.view': ['admin'],
+  'billing.edit': ['admin'],
+  'audit.view': ['admin'],
+  'settings.view': ['admin', 'manager'],
+  'settings.edit': ['admin'],
+  'data.export': ['admin', 'manager'],
+};
+
+/**
+ * Check if a role can perform a specific action
+ */
+export function canPerformAction(role: Role, action: ActionType): boolean {
+  const allowedRoles = actionPermissions[action];
+  return allowedRoles?.includes(role) ?? false;
+}
+
+/**
+ * Error thrown when permission is denied
+ */
+export class PermissionDeniedError extends Error {
+  constructor(action: ActionType, role: Role) {
+    super(`Permission denied: ${role} cannot perform ${action}`);
+    this.name = 'PermissionDeniedError';
+  }
+}
+
+/**
+ * Enforce a permission check - throws if denied
+ */
+export function enforcePermission(role: Role, action: ActionType): void {
+  if (!canPerformAction(role, action)) {
+    throw new PermissionDeniedError(action, role);
+  }
+}
+
+/**
+ * Get human-readable message for permission denial
+ */
+export function getPermissionDeniedMessage(action: ActionType): string {
+  const messages: Partial<Record<ActionType, string>> = {
+    'project.create': 'You do not have permission to create projects.',
+    'project.edit': 'You do not have permission to edit projects.',
+    'project.delete': 'Only administrators can delete projects.',
+    'project.archive': 'You do not have permission to archive projects.',
+    'user.invite': 'Only administrators can invite users.',
+    'user.changeRole': 'Only administrators can change user roles.',
+    'user.deactivate': 'Only administrators can deactivate users.',
+    'billing.view': 'Only administrators can view billing.',
+    'audit.view': 'Only administrators can view audit logs.',
+    'settings.edit': 'Only administrators can edit organization settings.',
+    'data.export': 'You do not have permission to export data.',
+  };
+  return messages[action] || 'You do not have permission to perform this action.';
 }

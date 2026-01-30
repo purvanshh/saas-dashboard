@@ -23,7 +23,7 @@ dotenv.config();
 
 import routes from './routes';
 import { globalErrorHandler } from './utils/errors';
-import { checkDatabaseConnection } from './db/client';
+import { checkDatabaseConnection, isMockMode } from './db/client';
 
 const app: Application = express();
 const PORT = process.env.PORT || 3001;
@@ -68,13 +68,15 @@ const generalLimiter = rateLimit({
   },
 });
 
-const authLimiter = rateLimit({
+// Auth rate limiter - stricter for auth endpoints
+export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5, // Stricter limit for auth endpoints
   skipSuccessfulRequests: true,
 });
 
-const writeLimiter = rateLimit({
+// Write rate limiter - for mutation endpoints
+export const writeLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 30, // 30 writes per minute
   message: {
@@ -99,9 +101,9 @@ app.use(express.urlencoded({ extended: true }));
 // HEALTH CHECK
 // ============================================
 
-app.get('/health', async (req, res) => {
+app.get('/health', async (_req, res) => {
   const dbHealthy = await checkDatabaseConnection();
-  
+
   if (dbHealthy) {
     res.json({
       status: 'healthy',
@@ -150,13 +152,17 @@ async function startServer() {
   try {
     // Verify database connection before starting
     const dbHealthy = await checkDatabaseConnection();
-    
-    if (!dbHealthy) {
+
+    if (!dbHealthy && !isMockMode) {
       console.error('❌ Database connection failed. Cannot start server.');
       process.exit(1);
     }
 
-    console.log('✅ Database connected');
+    if (dbHealthy) {
+      console.log('✅ Database connected');
+    } else {
+      console.log('ℹ️  Running in MOCK MODE - API will return placeholder responses');
+    }
 
     // Start server
     app.listen(PORT, () => {

@@ -171,3 +171,124 @@ export const adminQuickActions: QuickAction[] = [
     { id: 'report', label: 'Generate Report', icon: 'file-text', description: 'Create custom report' },
     { id: 'settings', label: 'Org Settings', icon: 'settings', description: 'Manage organization' },
 ];
+// Projects
+export interface Project {
+    id: string;
+    name: string;
+    description: string;
+    status: 'active' | 'archived' | 'completed';
+    lastUpdated: string;
+    memberCount: number;
+    organizationId: string;
+}
+
+export const projects: Project[] = [
+    { id: 'proj_1', name: 'Website Redesign', description: 'Overhaul of the main marketing site', status: 'active', lastUpdated: '2 hours ago', memberCount: 5, organizationId: 'org_1' },
+    { id: 'proj_2', name: 'Mobile App Beta', description: 'iOS and Android beta testing phase', status: 'active', lastUpdated: '1 day ago', memberCount: 8, organizationId: 'org_1' },
+    { id: 'proj_3', name: 'Legacy Migration', description: 'Moving from V1 to V2 infrastructure', status: 'completed', lastUpdated: '1 month ago', memberCount: 3, organizationId: 'org_1' },
+    { id: 'proj_new', name: 'Internal Tools', description: 'Dashboard for support team', status: 'active', lastUpdated: 'Just now', memberCount: 2, organizationId: 'org_new' },
+];
+
+// Billing Plans
+export interface SubscriptionPlan {
+    id: string;
+    name: string;
+    price: number;
+    features: string[];
+}
+
+export const plans: SubscriptionPlan[] = [
+    { id: 'starter', name: 'Starter', price: 29, features: ['Up to 5 users', 'Basic Analytics', '10GB Storage'] },
+    { id: 'professional', name: 'Professional', price: 99, features: ['Up to 20 users', 'Advanced Analytics', '100GB Storage', 'Priority Support'] },
+    { id: 'enterprise', name: 'Enterprise', price: 499, features: ['Unlimited users', 'Custom Analytics', 'Unlimited Storage', 'Dedicated Success Manager', 'SSO'] },
+];
+
+export interface BillingInfo {
+    organizationId: string;
+    currentPlanId: string;
+    nextBillingDate: string;
+    paymentMethod: string;
+    invoices: { id: string; date: string; amount: number; status: 'paid' | 'pending' }[];
+}
+
+export const billingData: Record<string, BillingInfo> = {
+    org_1: {
+        organizationId: 'org_1',
+        currentPlanId: 'enterprise',
+        nextBillingDate: 'Feb 28, 2026',
+        paymentMethod: 'Visa ending in 4242',
+        invoices: [
+            { id: 'inv_1', date: 'Jan 28, 2026', amount: 499, status: 'paid' },
+            { id: 'inv_2', date: 'Dec 28, 2025', amount: 499, status: 'paid' },
+        ]
+    },
+    org_2: {
+        organizationId: 'org_2',
+        currentPlanId: 'professional',
+        nextBillingDate: 'Feb 15, 2026',
+        paymentMethod: 'Mastercard ending in 8888',
+        invoices: [
+            { id: 'inv_3', date: 'Jan 15, 2026', amount: 99, status: 'paid' },
+        ]
+    }
+};
+
+// Insights Data
+export interface InsightData {
+    metric: string;
+    direction: 'up' | 'down';
+    change: number;
+    reason: string;
+    detail: string;
+    drillTarget: string;
+    recommendation?: string;
+    organizationId: string;
+}
+
+export const insightsData: Record<string, InsightData[]> = {
+    org_1: [
+        {
+            organizationId: 'org_1',
+            metric: 'Active Users',
+            direction: 'up',
+            change: 12.5,
+            reason: 'Successful marketing campaign',
+            detail: 'New user signups increased by 45% this week due to the "Summer Sale" promotion.',
+            drillTarget: 'Analytics > User Growth',
+            recommendation: 'Consider extending the campaign for another week to maximize growth.',
+        },
+        {
+            organizationId: 'org_1',
+            metric: 'Error Rate',
+            direction: 'down',
+            change: 15.3,
+            reason: 'Recent bug fixes deployment',
+            detail: 'The API stability patch (v2.4.0) resolved the intermittent timeout issues.',
+            drillTarget: 'Analytics > System Health',
+        }
+    ],
+    org_2: [
+        {
+            organizationId: 'org_2',
+            metric: 'Cloud Costs',
+            direction: 'up',
+            change: 8.4,
+            reason: 'Increased storage usage',
+            detail: 'Large media file uploads have spiked in the last 48 hours.',
+            drillTarget: 'Billing > Cost Analysis',
+            recommendation: 'Review storage policies or implement auto-archiving for old artifacts.',
+        }
+    ],
+    org_3: [
+        {
+            organizationId: 'org_3',
+            metric: 'Team Velocity',
+            direction: 'down',
+            change: 5.2,
+            reason: 'High technical debt',
+            detail: 'Average PR merge time has increased from 4h to 12h.',
+            drillTarget: 'Projects > Performance',
+            recommendation: 'Schedule a sprint dedicated to refactoring and debt reduction.',
+        }
+    ]
+};
