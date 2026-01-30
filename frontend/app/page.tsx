@@ -22,7 +22,7 @@ export default function Dashboard() {
   const { currentOrganization } = useTenant();
   const { currentRole, hasPermission } = useAuth();
   const { addToast } = useToast();
-  const isNewOrg = currentOrganization ? (currentOrganization as any).isNew || false : false;
+  const isNewOrg = currentOrganization?.isNew || false;
   const [showPermissionDenied, setShowPermissionDenied] = React.useState(false);
 
   return (

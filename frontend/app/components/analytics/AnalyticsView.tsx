@@ -1,14 +1,14 @@
 'use client';
 
 import React from 'react';
-import { useTenant } from '../../contexts/TenantContext';
+// import { useTenant } from '../../contexts/TenantContext';
 import { useToast } from '../../contexts/ToastContext';
 import { UsageChart } from '../dashboard/UsageChart';
 import { KPIGrid } from '../dashboard/KPIGrid';
 import { InsightCard } from '../dashboard/InsightCard';
 
 export function AnalyticsView() {
-    const { currentOrganization } = useTenant();
+    // const { currentOrganization } = useTenant(); // Unused
     const { addToast } = useToast();
 
     return (

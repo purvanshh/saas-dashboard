@@ -29,25 +29,42 @@ export function ProjectList() {
     // State
     const [projects, setProjects] = useState<Project[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Helper to handle concurrency errors
+    const handleConcurrencyError = () => {
+        addToast('Data has changed since you opened this form. Reloading...', 'error');
+        setIsFormOpen(false);
+        fetchProjects();
+    };
+
     // Fetch projects
     const fetchProjects = useCallback(async () => {
         if (!currentOrganization) return;
         setIsLoading(true);
-        const result = await mockApi.projects.list(currentOrganization.id);
-        if (result.success && result.data) {
-            setProjects(result.data);
+        setError(null);
+
+        try {
+            const result = await mockApi.projects.list(currentOrganization.id);
+            if (result.success && result.data) {
+                setProjects(result.data);
+            } else {
+                setError(result.error || 'Failed to load projects');
+            }
+        } catch (err) {
+            setError('An unexpected error occurred while loading projects.');
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     }, [currentOrganization]);
 
     useEffect(() => {
-        fetchProjects();
+        setTimeout(() => fetchProjects(), 0);
     }, [fetchProjects]);
 
     // Permission checks
@@ -104,14 +121,23 @@ export function ProjectList() {
         } else if (selectedProject) {
             const result = await mockApi.projects.update(
                 selectedProject.id,
-                data,
+                {
+                    ...data,
+                    expectedVersion: selectedProject.version // Enforce strict concurrency check
+                },
                 currentUser.id,
                 currentUser.name
             );
+
             if (result.success) {
                 addToast(`Project "${data.name}" updated successfully`, 'success');
                 fetchProjects();
             } else {
+                // Check for concurrency conflict (409)
+                if (result.error && result.error.includes('409')) {
+                    handleConcurrencyError();
+                    return;
+                }
                 throw new Error(result.error || 'Failed to update project');
             }
         }
@@ -137,6 +163,28 @@ export function ProjectList() {
             addToast(result.error || 'Failed to delete project', 'error');
         }
     };
+
+    // Render error state
+    if (error && !isLoading && projects.length === 0) {
+        return (
+            <div className="card" style={{ padding: '40px', textAlign: 'center', backgroundColor: 'var(--red-50)' }}>
+                <div style={{ marginBottom: '16px', color: 'var(--red-500)' }}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ margin: '0 auto' }}>
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                </div>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 8px 0', color: 'var(--red-700)' }}>Failed to load projects</h3>
+                <p style={{ color: 'var(--red-600)', margin: '0 0 16px 0', maxWidth: '300px', marginLeft: 'auto', marginRight: 'auto' }}>
+                    {error}
+                </p>
+                <button className="btn btn-secondary" onClick={fetchProjects}>
+                    Try Again
+                </button>
+            </div>
+        );
+    }
 
     // Render empty state
     if (!isLoading && projects.length === 0) {
@@ -167,21 +215,33 @@ export function ProjectList() {
                     <div>
                         <h2 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>Active Projects</h2>
                         <p style={{ fontSize: '13px', color: 'var(--foreground-muted)', margin: '4px 0 0 0' }}>
-                            Manage your team's initiatives
+                            Manage your team&apos;s initiatives
                         </p>
                     </div>
-                    <button
-                        className="btn btn-primary"
-                        onClick={handleCreate}
-                        disabled={!canCreate}
-                        title={!canCreate ? getPermissionDeniedMessage('project.create') : undefined}
-                    >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <line x1="12" y1="5" x2="12" y2="19" />
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
-                        New Project
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        {error && (
+                            <span style={{ fontSize: '12px', color: 'var(--red-600)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
+                                {error}
+                            </span>
+                        )}
+                        <button
+                            className="btn btn-primary"
+                            onClick={handleCreate}
+                            disabled={!canCreate}
+                            title={!canCreate ? getPermissionDeniedMessage('project.create') : undefined}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                            New Project
+                        </button>
+                    </div>
                 </div>
 
                 <div className="table-container">
@@ -205,6 +265,8 @@ export function ProjectList() {
                             ) : (
                                 projects.map((project) => (
                                     <tr key={project.id}>
+                                        {/* Row content */}
+
                                         <td>
                                             <div>
                                                 <div style={{ fontWeight: 500, color: 'var(--foreground)' }}>{project.name}</div>

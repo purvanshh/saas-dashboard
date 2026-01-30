@@ -19,24 +19,41 @@ export function UserList() {
     // State
     const [users, setUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [isInviteOpen, setIsInviteOpen] = useState(false);
     const [isDeactivateOpen, setIsDeactivateOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Helper to handle concurrency errors
+    const handleConcurrencyError = () => {
+        addToast('Data has changed. Reloading...', 'error');
+        fetchUsers();
+    };
+
     // Fetch users
     const fetchUsers = useCallback(async () => {
+        // ... (fetch logic remains same, just restoring context)
         if (!currentOrganization) return;
         setIsLoading(true);
-        const result = await mockApi.users.list(currentOrganization.id);
-        if (result.success && result.data) {
-            setUsers(result.data);
+        setError(null);
+
+        try {
+            const result = await mockApi.users.list(currentOrganization.id);
+            if (result.success && result.data) {
+                setUsers(result.data);
+            } else {
+                setError(result.error || 'Failed to load users');
+            }
+        } catch (err) {
+            setError('An unexpected error occurred while loading users.');
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     }, [currentOrganization]);
 
     useEffect(() => {
-        fetchUsers();
+        setTimeout(() => fetchUsers(), 0);
     }, [fetchUsers]);
 
     // Permission checks
@@ -83,13 +100,19 @@ export function UserList() {
             currentOrganization.id,
             newRole,
             currentUser.id,
-            currentUser.name
+            currentUser.name,
+            user.version // Enforce strict concurrency check
         );
 
         if (result.success) {
             addToast(`${user.name}'s role updated to ${getRoleLabel(newRole)}`, 'success');
             fetchUsers();
         } else {
+            // Check for concurrency conflict (409)
+            if (result.error && result.error.includes('409')) {
+                handleConcurrencyError();
+                return;
+            }
             addToast(result.error || 'Failed to update role', 'error');
         }
     };
@@ -130,6 +153,28 @@ export function UserList() {
         }
     };
 
+    // Render error state
+    if (error && !isLoading && users.length === 0) {
+        return (
+            <div className="card" style={{ padding: '40px', textAlign: 'center', backgroundColor: 'var(--red-50)' }}>
+                <div style={{ marginBottom: '16px', color: 'var(--red-500)' }}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ margin: '0 auto' }}>
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                </div>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 8px 0', color: 'var(--red-700)' }}>Failed to load users</h3>
+                <p style={{ color: 'var(--red-600)', margin: '0 0 16px 0', maxWidth: '300px', marginLeft: 'auto', marginRight: 'auto' }}>
+                    {error}
+                </p>
+                <button className="btn btn-secondary" onClick={fetchUsers}>
+                    Try Again
+                </button>
+            </div>
+        );
+    }
+
     return (
         <>
             <div className="card">
@@ -140,20 +185,32 @@ export function UserList() {
                             Manage access and roles
                         </p>
                     </div>
-                    <button
-                        className="btn btn-primary"
-                        onClick={handleInvite}
-                        disabled={!canInvite}
-                        title={!canInvite ? getPermissionDeniedMessage('user.invite') : undefined}
-                    >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                            <circle cx="9" cy="7" r="4" />
-                            <line x1="20" y1="8" x2="20" y2="14" />
-                            <line x1="23" y1="11" x2="17" y2="11" />
-                        </svg>
-                        Invite User
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        {error && (
+                            <span style={{ fontSize: '12px', color: 'var(--red-600)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
+                                {error}
+                            </span>
+                        )}
+                        <button
+                            className="btn btn-primary"
+                            onClick={handleInvite}
+                            disabled={!canInvite}
+                            title={!canInvite ? getPermissionDeniedMessage('user.invite') : undefined}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <line x1="20" y1="8" x2="20" y2="14" />
+                                <line x1="23" y1="11" x2="17" y2="11" />
+                            </svg>
+                            Invite User
+                        </button>
+                    </div>
                 </div>
 
                 <div className="table-container">
@@ -176,6 +233,8 @@ export function UserList() {
                             ) : (
                                 users.map((user) => (
                                     <tr key={user.id}>
+                                        {/* Row content */}
+
                                         <td>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                 <div

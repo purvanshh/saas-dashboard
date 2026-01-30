@@ -57,7 +57,7 @@ export function UsageChart() {
   const yTicks = 5;
   const tickValues = useMemo(() => {
     if (data.length === 0) return [];
-    const { maxValue, minValue, valueRange } = scales;
+    const { minValue, valueRange } = scales;
     return Array.from({ length: yTicks }, (_, i) => minValue + (valueRange * i) / (yTicks - 1));
   }, [data, scales]);
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../ui/Modal';
-import { Role, getRoleBadgeClass, getRoleLabel } from '../../lib/permissions';
+import { Role } from '../../lib/permissions';
 
 interface InviteUserModalProps {
     isOpen: boolean;

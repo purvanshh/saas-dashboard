@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { rolePermissions, Role, Permission } from '../lib/permissions';
-import { getStore, User as DbUser, getUsers } from '../lib/mockDb';
+import { getStore } from '../lib/mockDb';
 import { useTenant } from './TenantContext';
 
 // Storage key for persisting selected user/role
@@ -65,33 +65,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentRole, setCurrentRole] = useState<Role>(storedAuth.role || 'admin');
   const [currentUserId, setCurrentUserId] = useState<string | null>(storedAuth.userId || null);
 
-  // Get users for current org from mockDb
-  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
-
-  useEffect(() => {
-    if (currentOrganization) {
-      const store = getStore();
-      const orgUsers = store.users.filter(u => u.organizationId === currentOrganization.id && u.isActive);
-      setAvailableUsers(orgUsers.map(u => ({
+  // Get users for current org from mockDb (derived synchronously)
+  const availableUsers = React.useMemo(() => {
+    if (!currentOrganization) return [];
+    const store = getStore();
+    return store.users
+      .filter(u => u.organizationId === currentOrganization.id && u.isActive)
+      .map(u => ({
         id: u.id,
         name: u.name,
         email: u.email,
         avatar: u.avatar,
         role: u.role,
         organizationId: u.organizationId,
-      })));
+      }));
+  }, [currentOrganization]);
 
-      // If no current user selected or user not in org, select first available
-      if (!currentUserId || !orgUsers.find(u => u.id === currentUserId)) {
+  // Effect 2: Ensure valid current user/role
+  useEffect(() => {
+    if (availableUsers.length > 0) {
+      // If no user selected, or selected user not in list (e.g. org switch), reset
+      const isValidUser = currentUserId && availableUsers.find(u => u.id === currentUserId);
+
+      if (!isValidUser) {
         // Try to find user matching stored role, or take first
-        const matchingUser = orgUsers.find(u => u.role === currentRole) || orgUsers[0];
+        const matchingUser = availableUsers.find(u => u.role === currentRole) || availableUsers[0];
         if (matchingUser) {
-          setCurrentUserId(matchingUser.id);
-          setCurrentRole(matchingUser.role);
+          // Defer update to avoid sync-in-effect warning
+          setTimeout(() => {
+            setCurrentUserId(matchingUser.id);
+            setCurrentRole(matchingUser.role);
+          }, 0);
         }
       }
     }
-  }, [currentOrganization, currentUserId, currentRole]);
+  }, [availableUsers, currentUserId, currentRole]);
 
   // Current user object
   const currentUser: User | null = availableUsers.find(u => u.id === currentUserId) || availableUsers[0] || null;

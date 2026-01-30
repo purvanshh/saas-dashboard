@@ -31,6 +31,7 @@ export interface User {
     organizationId: string;
     isActive: boolean;
     createdAt: string;
+    version: number;
 }
 
 export interface Project {
@@ -43,6 +44,7 @@ export interface Project {
     organizationId: string;
     createdAt: string;
     createdBy: string;
+    version: number;
 }
 
 export interface AuditLogEntry {
@@ -91,44 +93,44 @@ const seedOrganizations: Organization[] = [
 
 const seedUsers: User[] = [
     // Org 1: Acme Corp
-    { id: 'user_1', name: 'Sarah Chen', email: 'sarah@acme.com', role: 'admin', organizationId: 'org_1', isActive: true, createdAt: '2025-01-01' },
-    { id: 'user_2', name: 'Michael Torres', email: 'michael@acme.com', role: 'manager', organizationId: 'org_1', isActive: true, createdAt: '2025-01-15' },
-    { id: 'user_3', name: 'Emily Watson', email: 'emily@acme.com', role: 'viewer', organizationId: 'org_1', isActive: true, createdAt: '2025-02-01' },
+    { id: 'user_1', name: 'Sarah Chen', email: 'sarah@acme.com', role: 'admin', organizationId: 'org_1', isActive: true, createdAt: '2025-01-01', version: 1 },
+    { id: 'user_2', name: 'Michael Torres', email: 'michael@acme.com', role: 'manager', organizationId: 'org_1', isActive: true, createdAt: '2025-01-15', version: 1 },
+    { id: 'user_3', name: 'Emily Watson', email: 'emily@acme.com', role: 'viewer', organizationId: 'org_1', isActive: true, createdAt: '2025-02-01', version: 1 },
 
     // Org 2: TechStart Inc (Startup vibe)
-    { id: 'user_4', name: 'Alex Kim', email: 'alex@techstart.io', role: 'admin', organizationId: 'org_2', isActive: true, createdAt: '2025-01-10' },
-    { id: 'user_5', name: 'Jordan Lee', email: 'jordan@techstart.io', role: 'manager', organizationId: 'org_2', isActive: true, createdAt: '2025-01-20' },
-    { id: 'user_6', name: 'Casey Smith', email: 'casey@techstart.io', role: 'viewer', organizationId: 'org_2', isActive: true, createdAt: '2025-02-05' },
-    { id: 'user_10', name: 'Sam Rivera', email: 'sam@techstart.io', role: 'manager', organizationId: 'org_2', isActive: true, createdAt: '2025-02-06' },
-    { id: 'user_11', name: 'Taylor Otwell', email: 'taylor@techstart.io', role: 'viewer', organizationId: 'org_2', isActive: true, createdAt: '2025-02-07' },
+    { id: 'user_4', name: 'Alex Kim', email: 'alex@techstart.io', role: 'admin', organizationId: 'org_2', isActive: true, createdAt: '2025-01-10', version: 1 },
+    { id: 'user_5', name: 'Jordan Lee', email: 'jordan@techstart.io', role: 'manager', organizationId: 'org_2', isActive: true, createdAt: '2025-01-20', version: 1 },
+    { id: 'user_6', name: 'Casey Smith', email: 'casey@techstart.io', role: 'viewer', organizationId: 'org_2', isActive: true, createdAt: '2025-02-05', version: 1 },
+    { id: 'user_10', name: 'Sam Rivera', email: 'sam@techstart.io', role: 'manager', organizationId: 'org_2', isActive: true, createdAt: '2025-02-06', version: 1 },
+    { id: 'user_11', name: 'Taylor Otwell', email: 'taylor@techstart.io', role: 'viewer', organizationId: 'org_2', isActive: true, createdAt: '2025-02-07', version: 1 },
 
     // Org 3: Global Dynamics (Enterprise vibe)
-    { id: 'user_7', name: 'Robert Fox', email: 'robert.fox@globaldynamics.com', role: 'admin', organizationId: 'org_3', isActive: true, createdAt: '2024-11-15' },
-    { id: 'user_8', name: 'Maria Garcia', email: 'm.garcia@globaldynamics.com', role: 'manager', organizationId: 'org_3', isActive: true, createdAt: '2024-12-01' },
-    { id: 'user_9', name: 'David Wong', email: 'd.wong@globaldynamics.com', role: 'viewer', organizationId: 'org_3', isActive: true, createdAt: '2025-01-12' },
-    { id: 'user_12', name: 'James Wilson', email: 'j.wilson@globaldynamics.com', role: 'viewer', organizationId: 'org_3', isActive: false, createdAt: '2024-12-10' },
-    { id: 'user_13', name: 'Linda Chen', email: 'l.chen@globaldynamics.com', role: 'manager', organizationId: 'org_3', isActive: true, createdAt: '2025-01-20' },
+    { id: 'user_7', name: 'Robert Fox', email: 'robert.fox@globaldynamics.com', role: 'admin', organizationId: 'org_3', isActive: true, createdAt: '2024-11-15', version: 1 },
+    { id: 'user_8', name: 'Maria Garcia', email: 'm.garcia@globaldynamics.com', role: 'manager', organizationId: 'org_3', isActive: true, createdAt: '2024-12-01', version: 1 },
+    { id: 'user_9', name: 'David Wong', email: 'd.wong@globaldynamics.com', role: 'viewer', organizationId: 'org_3', isActive: true, createdAt: '2025-01-12', version: 1 },
+    { id: 'user_12', name: 'James Wilson', email: 'j.wilson@globaldynamics.com', role: 'viewer', organizationId: 'org_3', isActive: false, createdAt: '2024-12-10', version: 1 },
+    { id: 'user_13', name: 'Linda Chen', email: 'l.chen@globaldynamics.com', role: 'manager', organizationId: 'org_3', isActive: true, createdAt: '2025-01-20', version: 1 },
 ];
 
 const seedProjects: Project[] = [
     // Org 1: Acme Corp
-    { id: 'proj_1', name: 'Website Redesign', description: 'Overhaul of the main marketing site', status: 'active', lastUpdated: '2 hours ago', memberCount: 5, organizationId: 'org_1', createdAt: '2025-01-10', createdBy: 'user_1' },
-    { id: 'proj_2', name: 'Mobile App Beta', description: 'iOS and Android beta testing phase', status: 'active', lastUpdated: '1 day ago', memberCount: 8, organizationId: 'org_1', createdAt: '2025-01-15', createdBy: 'user_2' },
-    { id: 'proj_3', name: 'Legacy Migration', description: 'Moving from V1 to V2 infrastructure', status: 'completed', lastUpdated: '1 month ago', memberCount: 3, organizationId: 'org_1', createdAt: '2024-12-01', createdBy: 'user_1' },
+    { id: 'proj_1', name: 'Website Redesign', description: 'Overhaul of the main marketing site', status: 'active', lastUpdated: '2 hours ago', memberCount: 5, organizationId: 'org_1', createdAt: '2025-01-10', createdBy: 'user_1', version: 1 },
+    { id: 'proj_2', name: 'Mobile App Beta', description: 'iOS and Android beta testing phase', status: 'active', lastUpdated: '1 day ago', memberCount: 8, organizationId: 'org_1', createdAt: '2025-01-15', createdBy: 'user_2', version: 1 },
+    { id: 'proj_3', name: 'Legacy Migration', description: 'Moving from V1 to V2 infrastructure', status: 'completed', lastUpdated: '1 month ago', memberCount: 3, organizationId: 'org_1', createdAt: '2024-12-01', createdBy: 'user_1', version: 1 },
 
     // Org 2: TechStart Inc
-    { id: 'proj_4', name: 'API Gateway', description: 'Centralized API management system', status: 'active', lastUpdated: '3 hours ago', memberCount: 4, organizationId: 'org_2', createdAt: '2025-01-20', createdBy: 'user_4' },
-    { id: 'proj_5', name: 'Customer Dashboard', description: 'New analytics view for customers', status: 'active', lastUpdated: '5 hours ago', memberCount: 6, organizationId: 'org_2', createdAt: '2025-02-01', createdBy: 'user_5' },
-    { id: 'proj_6', name: 'Internal Tools', description: 'Admin panel updates', status: 'archived', lastUpdated: '2 weeks ago', memberCount: 2, organizationId: 'org_2', createdAt: '2024-12-15', createdBy: 'user_4' },
-    { id: 'proj_9', name: 'AI Integration', description: 'Integrating LLM features into core product', status: 'active', lastUpdated: '10 min ago', memberCount: 5, organizationId: 'org_2', createdAt: '2025-02-10', createdBy: 'user_4' },
-    { id: 'proj_10', name: 'Growth Experiments', description: 'A/B testing framework setup', status: 'completed', lastUpdated: '1 week ago', memberCount: 3, organizationId: 'org_2', createdAt: '2025-01-05', createdBy: 'user_5' },
+    { id: 'proj_4', name: 'API Gateway', description: 'Centralized API management system', status: 'active', lastUpdated: '3 hours ago', memberCount: 4, organizationId: 'org_2', createdAt: '2025-01-20', createdBy: 'user_4', version: 1 },
+    { id: 'proj_5', name: 'Customer Dashboard', description: 'New analytics view for customers', status: 'active', lastUpdated: '5 hours ago', memberCount: 6, organizationId: 'org_2', createdAt: '2025-02-01', createdBy: 'user_5', version: 1 },
+    { id: 'proj_6', name: 'Internal Tools', description: 'Admin panel updates', status: 'archived', lastUpdated: '2 weeks ago', memberCount: 2, organizationId: 'org_2', createdAt: '2024-12-15', createdBy: 'user_4', version: 1 },
+    { id: 'proj_9', name: 'AI Integration', description: 'Integrating LLM features into core product', status: 'active', lastUpdated: '10 min ago', memberCount: 5, organizationId: 'org_2', createdAt: '2025-02-10', createdBy: 'user_4', version: 1 },
+    { id: 'proj_10', name: 'Growth Experiments', description: 'A/B testing framework setup', status: 'completed', lastUpdated: '1 week ago', memberCount: 3, organizationId: 'org_2', createdAt: '2025-01-05', createdBy: 'user_5', version: 1 },
 
     // Org 3: Global Dynamics
-    { id: 'proj_7', name: 'Cloud Migration', description: 'Moving on-premise servers to AWS', status: 'active', lastUpdated: '10 min ago', memberCount: 12, organizationId: 'org_3', createdAt: '2024-11-20', createdBy: 'user_7' },
-    { id: 'proj_8', name: 'Security Audit', description: 'Q1 Security compliance check', status: 'completed', lastUpdated: '3 days ago', memberCount: 5, organizationId: 'org_3', createdAt: '2025-01-05', createdBy: 'user_8' },
-    { id: 'proj_11', name: 'Enterprise ERP', description: 'Implementation of new ERP system', status: 'active', lastUpdated: '1 hour ago', memberCount: 25, organizationId: 'org_3', createdAt: '2024-10-15', createdBy: 'user_7' },
-    { id: 'proj_12', name: 'Data Warehouse', description: 'Snowflake integration project', status: 'active', lastUpdated: '4 hours ago', memberCount: 8, organizationId: 'org_3', createdAt: '2024-12-01', createdBy: 'user_13' },
-    { id: 'proj_13', name: 'GDPR Compliance', description: 'EU data protection updates', status: 'completed', lastUpdated: '1 month ago', memberCount: 4, organizationId: 'org_3', createdAt: '2024-11-01', createdBy: 'user_8' },
+    { id: 'proj_7', name: 'Cloud Migration', description: 'Moving on-premise servers to AWS', status: 'active', lastUpdated: '10 min ago', memberCount: 12, organizationId: 'org_3', createdAt: '2024-11-20', createdBy: 'user_7', version: 1 },
+    { id: 'proj_8', name: 'Security Audit', description: 'Q1 Security compliance check', status: 'completed', lastUpdated: '3 days ago', memberCount: 5, organizationId: 'org_3', createdAt: '2025-01-05', createdBy: 'user_8', version: 1 },
+    { id: 'proj_11', name: 'Enterprise ERP', description: 'Implementation of new ERP system', status: 'active', lastUpdated: '1 hour ago', memberCount: 25, organizationId: 'org_3', createdAt: '2024-10-15', createdBy: 'user_7', version: 1 },
+    { id: 'proj_12', name: 'Data Warehouse', description: 'Snowflake integration project', status: 'active', lastUpdated: '4 hours ago', memberCount: 8, organizationId: 'org_3', createdAt: '2024-12-01', createdBy: 'user_13', version: 1 },
+    { id: 'proj_13', name: 'GDPR Compliance', description: 'EU data protection updates', status: 'completed', lastUpdated: '1 month ago', memberCount: 4, organizationId: 'org_3', createdAt: '2024-11-01', createdBy: 'user_8', version: 1 },
 ];
 
 const seedAuditLogs: AuditLogEntry[] = [
@@ -349,6 +351,7 @@ export function createProject(
         organizationId: tenantId,
         createdAt: new Date().toISOString(),
         createdBy: actorId,
+        version: 1,
     };
     s.projects.push(project);
 
@@ -364,6 +367,7 @@ export interface UpdateProjectPayload {
     description?: string;
     status?: 'active' | 'archived' | 'completed';
     memberCount?: number;
+    expectedVersion?: number;
 }
 
 export function updateProject(
@@ -377,10 +381,17 @@ export function updateProject(
     if (idx === -1) return null;
 
     const project = s.projects[idx];
+
+    // Optimistic Concurrency Control
+    if (payload.expectedVersion !== undefined && project.version !== payload.expectedVersion) {
+        throw new Error('409: Conflict - Data has changed. Please reload.');
+    }
+
     const updated: Project = {
         ...project,
         ...payload,
         lastUpdated: 'Just now',
+        version: project.version + 1,
     };
     s.projects[idx] = updated;
 
@@ -457,6 +468,7 @@ export function inviteUser(
         organizationId: tenantId,
         isActive: true,
         createdAt: new Date().toISOString(),
+        version: 1,
     };
     s.users.push(user);
 
@@ -483,14 +495,21 @@ export function updateUserRole(
     tenantId: string,
     newRole: Role,
     actorId: string,
-    actorName: string
+    actorName: string,
+    expectedVersion?: number // OCC
 ): User | null {
     const s = getStore();
     const user = s.users.find(u => u.id === userId);
     if (!user) return null;
 
+    // Optimistic Concurrency Control
+    if (expectedVersion !== undefined && user.version !== expectedVersion) {
+        throw new Error('409: Conflict - Data has changed. Please reload.');
+    }
+
     const oldRole = user.role;
     user.role = newRole;
+    user.version = (user.version || 1) + 1;
 
     // Update membership
     const membership = s.memberships.find(m => m.userId === userId && m.organizationId === tenantId);
@@ -543,11 +562,7 @@ export function notifyListeners(): void {
 }
 
 // Hook into persist to notify
-const originalPersist = persist;
-function persistAndNotify(): void {
-    originalPersist();
-    notifyListeners();
-}
+
 
 // Override persist
 (function overridePersist() {

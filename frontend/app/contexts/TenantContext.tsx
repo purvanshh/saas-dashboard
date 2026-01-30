@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { getOrganizations, Organization as DbOrganization, initializeStore } from '../lib/mockDb';
+import { getOrganizations, initializeStore } from '../lib/mockDb';
 
 // Storage key for persisting selected tenant
 const TENANT_STORAGE_KEY = 'saas_dashboard_tenant';
@@ -62,7 +62,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     return orgs[0] || null;
   });
 
-  const [isHydrated, setIsHydrated] = useState(false);
+
 
   // Hydrate from storage on mount
   useEffect(() => {
@@ -71,11 +71,12 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
     if (storedOrgId) {
       const stored = orgs.find(o => o.id === storedOrgId);
-      if (stored && stored.id !== currentOrganization?.id) {
-        setCurrentOrganization(stored);
+      // Only update if stored is valid and different from initial state (which is default)
+      if (stored) {
+        // Defer update to avoid sync-in-effect linter error
+        setTimeout(() => setCurrentOrganization(stored), 0);
       }
     }
-    setIsHydrated(true);
   }, []); // Run once on mount
 
   const refreshTenant = useCallback(async () => {

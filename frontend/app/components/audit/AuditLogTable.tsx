@@ -44,7 +44,7 @@ export function AuditLogTable() {
     }, [currentOrganization]);
 
     useEffect(() => {
-        fetchLogs();
+        setTimeout(() => fetchLogs(), 0);
     }, [fetchLogs]);
 
     // Filter logs

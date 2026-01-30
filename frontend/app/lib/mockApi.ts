@@ -27,21 +27,52 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 }
 
 // ============================================
-// HELPERS
+// NETWORK SIMULATION
 // ============================================
 
-const SIMULATED_DELAY_MS = 300;
+interface NetworkConfig {
+    minLatency: number;
+    maxLatency: number;
+    failureRate: number; // 0.0 to 1.0
+    enabled: boolean;
+}
 
-async function delay(ms: number = SIMULATED_DELAY_MS): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+const DEFAULT_CONFIG: NetworkConfig = {
+    minLatency: 50,
+    maxLatency: 800,
+    failureRate: 0.05, // 5% failure rate
+    enabled: true,
+};
+
+// Allow runtime configuration via window if needed for debugging
+const getConfig = (): NetworkConfig => {
+    if (typeof window !== 'undefined' && (window as any).__MOCK_API_CONFIG__) {
+        return (window as any).__MOCK_API_CONFIG__;
+    }
+    return DEFAULT_CONFIG;
+};
+
+async function simulateNetworkCondition(): Promise<void> {
+    const config = getConfig();
+    if (!config.enabled) return;
+
+    // 1. Variable Latency
+    const delay = Math.floor(Math.random() * (config.maxLatency - config.minLatency + 1)) + config.minLatency;
+    await new Promise(resolve => setTimeout(resolve, delay));
+
+    // 2. Random Failures (500 Internal Server Error)
+    if (Math.random() < config.failureRate) {
+        throw new Error('Simulated 500: Internal Server Error (Random Failure)');
+    }
 }
 
 async function apiCall<T>(fn: () => T): Promise<ApiResponse<T>> {
-    await delay();
     try {
+        await simulateNetworkCondition();
         const data = fn();
         return { success: true, data };
     } catch (e) {
+        console.error('Mock API Error:', e);
         return { success: false, error: (e as Error).message };
     }
 }
@@ -121,9 +152,10 @@ export const usersApi = {
         tenantId: string,
         newRole: Role,
         actorId: string,
-        actorName: string
+        actorName: string,
+        expectedVersion?: number
     ): Promise<ApiResponse<db.User | null>> {
-        return apiCall(() => db.updateUserRole(userId, tenantId, newRole, actorId, actorName));
+        return apiCall(() => db.updateUserRole(userId, tenantId, newRole, actorId, actorName, expectedVersion));
     },
 
     async deactivate(
@@ -186,7 +218,7 @@ export const mockApi = {
 
     // Utility to reset store
     async resetStore(): Promise<void> {
-        await delay(100);
+        await simulateNetworkCondition();
         db.resetStore();
     },
 };
