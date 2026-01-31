@@ -225,7 +225,7 @@ export function UsageChart() {
               strokeLinejoin="round"
               className="animate-slide-in-left"
               style={{
-                filter: 'drop-shadow(0 2px 4px rgba(255, 107, 53, 0.2))',
+                filter: 'drop-shadow(0 2px 4px rgba(79, 70, 229, 0.2))',
               }}
             />
 
@@ -241,7 +241,7 @@ export function UsageChart() {
                 strokeWidth="2"
                 className={`animate-scale-in animate-delay-${i * 50}`}
                 style={{
-                  filter: 'drop-shadow(0 2px 4px rgba(255, 107, 53, 0.3))',
+                  filter: 'drop-shadow(0 2px 4px rgba(79, 70, 229, 0.3))',
                   cursor: 'pointer',
                 }}
               >

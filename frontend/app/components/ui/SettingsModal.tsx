@@ -107,7 +107,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id as any)}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${activeTab === tab.id
-                                            ? 'bg-orange-100 text-orange-700 font-medium'
+                                            ? 'bg-indigo-100 text-indigo-700 font-medium'
                                             : 'text-gray-600 hover:bg-gray-100'
                                         }`}
                                 >
@@ -127,7 +127,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         <div className="mt-8 p-4 bg-white rounded-lg shadow-sm">
                             <h4 className="font-medium text-gray-900 mb-2">Current Plan</h4>
                             <div className="flex items-center gap-2 mb-2">
-                                <span className="text-lg font-bold text-orange-600 capitalize">{billingInfo.plan}</span>
+                                <span className="text-lg font-bold text-indigo-600 capitalize">{billingInfo.plan}</span>
                                 <span className="badge badge-success">Active</span>
                             </div>
                             <p className="text-sm text-gray-600">Next billing: {billingInfo.nextBilling}</p>
@@ -195,7 +195,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                 className="input"
                                             />
                                         ) : (
-                                            <a href={orgSettings.website} target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:text-orange-700">
+                                            <a href={orgSettings.website} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-700">
                                                 {orgSettings.website}
                                             </a>
                                         )}
@@ -327,7 +327,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                         ].map((member, index) => (
                                             <div key={index} className="px-6 py-4 flex items-center justify-between">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white font-medium">
+                                                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-medium">
                                                         {member.name.split(' ').map(n => n[0]).join('')}
                                                     </div>
                                                     <div>
@@ -390,7 +390,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                         <div className="bg-white border border-gray-200 rounded-lg p-6">
                                             <div className="flex items-center justify-between mb-4">
                                                 <h4 className="font-medium text-gray-900">Recent Invoices</h4>
-                                                <button className="text-orange-600 hover:text-orange-700 text-sm font-medium">
+                                                <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
                                                     View All
                                                 </button>
                                             </div>
@@ -404,7 +404,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                         <div className="flex items-center gap-4">
                                                             <span className="font-medium">${invoice.amount}</span>
                                                             <span className="badge badge-success">Paid</span>
-                                                            <button className="text-orange-600 hover:text-orange-700 text-sm">
+                                                            <button className="text-indigo-600 hover:text-indigo-700 text-sm">
                                                                 Download
                                                             </button>
                                                         </div>
@@ -415,16 +415,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     </div>
 
                                     <div className="space-y-6">
-                                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
-                                            <h4 className="font-medium text-orange-900 mb-2">Usage This Month</h4>
+                                        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-6">
+                                            <h4 className="font-medium text-indigo-900 mb-2">Usage This Month</h4>
                                             <div className="space-y-3">
                                                 <div>
                                                     <div className="flex justify-between text-sm mb-1">
                                                         <span>Active Users</span>
                                                         <span>1,284 / ∞</span>
                                                     </div>
-                                                    <div className="w-full bg-orange-200 rounded-full h-2">
-                                                        <div className="bg-orange-500 h-2 rounded-full" style={{ width: '45%' }}></div>
+                                                    <div className="w-full bg-indigo-200 rounded-full h-2">
+                                                        <div className="bg-indigo-500 h-2 rounded-full" style={{ width: '45%' }}></div>
                                                     </div>
                                                 </div>
                                                 <div>
@@ -432,8 +432,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                         <span>Storage</span>
                                                         <span>847 GB / ∞</span>
                                                     </div>
-                                                    <div className="w-full bg-orange-200 rounded-full h-2">
-                                                        <div className="bg-orange-500 h-2 rounded-full" style={{ width: '25%' }}></div>
+                                                    <div className="w-full bg-indigo-200 rounded-full h-2">
+                                                        <div className="bg-indigo-500 h-2 rounded-full" style={{ width: '25%' }}></div>
                                                     </div>
                                                 </div>
                                                 <div>
@@ -441,8 +441,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                         <span>API Calls</span>
                                                         <span>2.4M / ∞</span>
                                                     </div>
-                                                    <div className="w-full bg-orange-200 rounded-full h-2">
-                                                        <div className="bg-orange-500 h-2 rounded-full" style={{ width: '60%' }}></div>
+                                                    <div className="w-full bg-indigo-200 rounded-full h-2">
+                                                        <div className="bg-indigo-500 h-2 rounded-full" style={{ width: '60%' }}></div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -546,7 +546,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                         onChange={(e) => setOrgSettings({ ...orgSettings, enableSSO: e.target.checked })}
                                                         className="sr-only peer"
                                                     />
-                                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                                 </label>
                                             </div>
                                             <button className="btn btn-secondary w-full">
@@ -594,7 +594,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                             onChange={(e) => setOrgSettings({ ...orgSettings, requireEmailVerification: e.target.checked })}
                                                             className="sr-only peer"
                                                         />
-                                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                                     </label>
                                                 </div>
                                                 <div className="flex items-center justify-between">
@@ -609,7 +609,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                                             onChange={(e) => setOrgSettings({ ...orgSettings, allowPublicSignup: e.target.checked })}
                                                             className="sr-only peer"
                                                         />
-                                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                                     </label>
                                                 </div>
                                             </div>

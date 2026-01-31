@@ -17,8 +17,8 @@ const typeConfig: Record<string, { color: string; bg: string; label: string }> =
     label: 'SLA Notice',
   },
   performance: {
-    color: 'var(--orange-600)',
-    bg: 'var(--orange-50)',
+    color: 'var(--indigo-600)',
+    bg: 'var(--indigo-50)',
     label: 'Performance',
   },
   maintenance: {

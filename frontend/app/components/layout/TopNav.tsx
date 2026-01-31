@@ -74,7 +74,7 @@ export function TopNav() {
                     right: 0,
                     height: 'var(--topnav-height)',
                     background: 'linear-gradient(135deg, white 0%, rgba(248, 250, 252, 0.95) 100%)',
-                    borderBottom: '1px solid rgba(255, 107, 53, 0.1)',
+                    borderBottom: '1px solid rgba(79, 70, 229, 0.1)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
@@ -119,7 +119,7 @@ export function TopNav() {
                                     color: 'white',
                                     fontSize: '12px',
                                     fontWeight: 700,
-                                    boxShadow: '0 2px 8px rgba(255, 107, 53, 0.3)',
+                                    boxShadow: '0 2px 8px rgba(79, 70, 229, 0.3)',
                                 }}
                             >
                                 {currentOrganization?.name?.[0] || 'O'}
@@ -355,7 +355,7 @@ export function TopNav() {
                                     color: 'white',
                                     fontSize: '14px',
                                     fontWeight: 700,
-                                    boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)',
+                                    boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)',
                                 }}
                             >
                                 {getInitials(currentUser?.name || 'User')}

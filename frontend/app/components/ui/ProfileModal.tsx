@@ -70,7 +70,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 <div className="flex items-center justify-between p-4 border-b border-gray-200">
                     <div className="flex items-center gap-4">
                         <div
-                            className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-xl font-bold shadow-lg"
+                            className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white text-xl font-bold shadow-lg"
                         >
                             {getInitials(currentUser?.name || 'User')}
                         </div>
@@ -109,7 +109,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                     onClick={() => setActiveTab(tab.id as any)}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                                         activeTab === tab.id
-                                            ? 'bg-orange-100 text-orange-700 font-medium'
+                                            ? 'bg-indigo-100 text-indigo-700 font-medium'
                                             : 'text-gray-600 hover:bg-gray-100'
                                     }`}
                                 >
@@ -234,7 +234,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                                 className="input"
                                             />
                                         ) : (
-                                            <a href={formData.linkedin} target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:text-orange-700">
+                                            <a href={formData.linkedin} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-700">
                                                 {formData.linkedin}
                                             </a>
                                         )}
@@ -252,7 +252,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                                 className="input"
                                             />
                                         ) : (
-                                            <a href={formData.github} target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:text-orange-700">
+                                            <a href={formData.github} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-700">
                                                 {formData.github}
                                             </a>
                                         )}
@@ -314,7 +314,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                                                             onChange={(e) => setPreferences({ ...preferences, [pref.key]: e.target.checked })}
                                                             className="sr-only peer"
                                                         />
-                                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                                     </label>
                                                 </div>
                                             ))}

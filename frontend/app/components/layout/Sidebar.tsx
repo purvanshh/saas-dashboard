@@ -142,10 +142,10 @@ function NavItemComponent({ item, isActive, index, onModalClick }: { item: NavIt
                     fontSize: '14px',
                     fontWeight: isActive ? 600 : 500,
                     background: isActive
-                        ? 'linear-gradient(135deg, rgba(255, 107, 53, 0.2) 0%, rgba(255, 107, 53, 0.1) 100%)'
+                        ? 'linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0.1) 100%)'
                         : 'transparent',
                     border: isActive
-                        ? '1px solid rgba(255, 107, 53, 0.3)'
+                        ? '1px solid rgba(79, 70, 229, 0.3)'
                         : '1px solid transparent',
                     transition: 'all var(--micro-duration) var(--micro-easing)',
                     position: 'relative',
@@ -215,18 +215,18 @@ function NavItemComponent({ item, isActive, index, onModalClick }: { item: NavIt
                 fontSize: '14px',
                 fontWeight: isActive ? 600 : 500,
                 background: isActive
-                    ? 'linear-gradient(135deg, rgba(255, 107, 53, 0.2) 0%, rgba(255, 107, 53, 0.1) 100%)'
+                    ? 'linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0.1) 100%)'
                     : isHovered
                         ? 'rgba(255,255,255,0.08)'
                         : 'transparent',
                 border: isActive
-                    ? '1px solid rgba(255, 107, 53, 0.3)'
+                    ? '1px solid rgba(79, 70, 229, 0.3)'
                     : '1px solid transparent',
                 transition: 'all var(--micro-duration) var(--micro-easing)',
                 position: 'relative',
                 overflow: 'hidden',
                 transform: isHovered ? 'translateX(4px)' : 'translateX(0)',
-                boxShadow: isActive ? '0 4px 12px rgba(255, 107, 53, 0.2)' : 'none',
+                boxShadow: isActive ? '0 4px 12px rgba(79, 70, 229, 0.2)' : 'none',
             }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -296,7 +296,7 @@ export function Sidebar({ onProfileSettingsClick }: SidebarProps) {
                 width: 'var(--sidebar-width)',
                 height: '100vh',
                 background: 'linear-gradient(180deg, var(--slate-900) 0%, rgba(15, 23, 42, 0.95) 100%)',
-                borderRight: '1px solid rgba(255, 107, 53, 0.1)',
+                borderRight: '1px solid rgba(79, 70, 229, 0.1)',
                 display: 'flex',
                 flexDirection: 'column',
                 zIndex: 40,
@@ -308,7 +308,7 @@ export function Sidebar({ onProfileSettingsClick }: SidebarProps) {
                 className="animate-slide-in-left animate-delay-100"
                 style={{
                     padding: '24px 20px',
-                    borderBottom: '1px solid rgba(255, 107, 53, 0.1)',
+                    borderBottom: '1px solid rgba(79, 70, 229, 0.1)',
                     position: 'relative',
                 }}
             >
@@ -321,7 +321,7 @@ export function Sidebar({ onProfileSettingsClick }: SidebarProps) {
                         transform: 'translate(-50%, -50%)',
                         width: '120px',
                         height: '60px',
-                        background: 'radial-gradient(ellipse, rgba(255, 107, 53, 0.1) 0%, transparent 70%)',
+                        background: 'radial-gradient(ellipse, rgba(79, 70, 229, 0.1) 0%, transparent 70%)',
                         pointerEvents: 'none',
                     }}
                 />
@@ -347,7 +347,7 @@ export function Sidebar({ onProfileSettingsClick }: SidebarProps) {
                             color: 'white',
                             fontWeight: 700,
                             fontSize: '16px',
-                            boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)',
+                            boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)',
                         }}
                     >
                         S
@@ -437,7 +437,7 @@ export function Sidebar({ onProfileSettingsClick }: SidebarProps) {
                 className="animate-slide-in-left animate-delay-1000"
                 style={{
                     padding: '20px',
-                    borderTop: '1px solid rgba(255, 107, 53, 0.1)',
+                    borderTop: '1px solid rgba(79, 70, 229, 0.1)',
                 }}
             >
                 <div

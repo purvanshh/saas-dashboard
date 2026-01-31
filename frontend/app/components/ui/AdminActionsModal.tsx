@@ -246,7 +246,7 @@ export function AdminActionsModal({ isOpen, onClose, actionType }: AdminActionsM
                                 id="includeDeleted"
                                 checked={exportData.includeDeleted}
                                 onChange={(e) => setExportData({ ...exportData, includeDeleted: e.target.checked })}
-                                className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                                className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                             />
                             <label htmlFor="includeDeleted" className="text-sm text-gray-700">
                                 Include deleted/archived items
@@ -340,7 +340,7 @@ export function AdminActionsModal({ isOpen, onClose, actionType }: AdminActionsM
                                     id="includeCharts"
                                     checked={reportData.includeCharts}
                                     onChange={(e) => setReportData({ ...reportData, includeCharts: e.target.checked })}
-                                    className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                                    className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                                 />
                                 <label htmlFor="includeCharts" className="text-sm text-gray-700">
                                     Include charts and visualizations
@@ -352,7 +352,7 @@ export function AdminActionsModal({ isOpen, onClose, actionType }: AdminActionsM
                                     id="includeRawData"
                                     checked={reportData.includeRawData}
                                     onChange={(e) => setReportData({ ...reportData, includeRawData: e.target.checked })}
-                                    className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                                    className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                                 />
                                 <label htmlFor="includeRawData" className="text-sm text-gray-700">
                                     Include raw data tables
