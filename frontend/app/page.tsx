@@ -17,6 +17,7 @@ import { AccessDenied } from './components/ui/AccessDenied';
 import { WelcomeState, TenantIsolationNotice } from './components/ui/EmptyState';
 import { SystemConstraints } from './components/dashboard/SystemConstraints';
 import { PermissionDeniedModal } from './components/ui/PermissionDeniedModal';
+import { useScrollAnimation } from './hooks/useScrollAnimation';
 
 export default function Dashboard() {
   const { currentOrganization } = useTenant();
@@ -25,24 +26,36 @@ export default function Dashboard() {
   const isNewOrg = currentOrganization?.isNew || false;
   const [showPermissionDenied, setShowPermissionDenied] = React.useState(false);
 
+  // Animation hooks for premium feel
+  const headerAnimation = useScrollAnimation({ delay: 0 });
+  const kpiAnimation = useScrollAnimation({ delay: 200 });
+  const constraintsAnimation = useScrollAnimation({ delay: 400 });
+  const insightAnimation = useScrollAnimation({ delay: 600 });
+  const mainContentAnimation = useScrollAnimation({ delay: 800 });
+
   return (
     <DashboardLayout>
-      {/* Page Header */}
-      <div style={{ marginBottom: '24px' }}>
+      {/* Premium Animated Header */}
+      <div 
+        ref={headerAnimation.elementRef}
+        className={`mb-6 ${headerAnimation.isVisible ? 'animate-slide-in-up' : 'opacity-0'}`}
+        style={{ marginBottom: '24px' }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div>
-            <h1 style={{
-              fontSize: '24px',
-              fontWeight: 600,
-              color: 'var(--foreground)',
-              margin: 0
+          <div className="animate-slide-in-left">
+            <h1 className="text-gradient" style={{
+              fontSize: '32px',
+              fontWeight: 700,
+              margin: 0,
+              letterSpacing: '-0.02em'
             }}>
               Dashboard
             </h1>
             <p style={{
-              fontSize: '14px',
+              fontSize: '16px',
               color: 'var(--foreground-muted)',
-              margin: '4px 0 0 0'
+              margin: '8px 0 0 0',
+              fontWeight: 400
             }}>
               {isNewOrg
                 ? `Let's get ${currentOrganization?.name || 'your organization'} up and running`
@@ -50,14 +63,14 @@ export default function Dashboard() {
               }
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            {/* Disabled action example for non-admins */}
+          <div className="animate-slide-in-right animate-delay-200" style={{ display: 'flex', gap: '12px' }}>
+            {/* Enhanced Disabled Action with Premium Styling */}
             <DisabledAction
               reason="Admin access required to export"
               disabled={!hasPermission('canManageOrg')}
             >
               <button
-                className="btn btn-secondary"
+                className="btn btn-secondary glow-hover"
                 onClick={() => addToast('Generating report... This may take a moment.', 'info')}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -71,7 +84,7 @@ export default function Dashboard() {
 
             <PermissionGate requiredPermission="canCreate">
               <button
-                className="btn btn-primary"
+                className="btn btn-primary animate-pulse-glow"
                 onClick={() => addToast('Opening project creation wizard...', 'success')}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -84,163 +97,188 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Role-based notice for Viewers */}
+        {/* Enhanced Role Notice with Premium Styling */}
         {currentRole === 'viewer' && (
-          <div
-            style={{
-              marginTop: '16px',
-              padding: '12px 16px',
-              backgroundColor: 'var(--amber-50)',
-              border: '1px solid var(--amber-500)',
-              borderRadius: 'var(--radius-md)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-            }}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="var(--amber-600)"
-              strokeWidth="2"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            <span style={{ fontSize: '14px', color: 'var(--amber-700)' }}>
+          <div className="animate-slide-in-up animate-delay-300" style={{
+            marginTop: '20px',
+            padding: '16px 20px',
+            background: 'linear-gradient(135deg, var(--amber-50) 0%, rgba(255, 251, 235, 0.8) 100%)',
+            border: '1px solid var(--amber-500)',
+            borderRadius: 'var(--radius-lg)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            boxShadow: '0 4px 6px rgba(245, 158, 11, 0.1)',
+          }}>
+            <div className="animate-float">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--amber-600)"
+                strokeWidth="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <span style={{ fontSize: '14px', color: 'var(--amber-700)', fontWeight: 500 }}>
               You have <strong>Viewer</strong> access. Some features are read-only or restricted.
             </span>
           </div>
         )}
       </div>
 
-      {/* New Organization Welcome State */}
+      {/* New Organization Welcome State with Premium Animations */}
       {isNewOrg ? (
-        <>
+        <div className="animate-fade-in">
           <WelcomeState orgName={currentOrganization?.name || 'your organization'} />
 
-          {/* Empty dashboard state */}
-          <div style={{ marginTop: '24px' }}>
+          {/* Empty dashboard state with staggered animations */}
+          <div 
+            ref={constraintsAnimation.elementRef}
+            className={`mt-6 ${constraintsAnimation.isVisible ? 'animate-slide-in-up animate-delay-200' : 'opacity-0'}`}
+          >
             <TenantIsolationNotice />
           </div>
 
           <div
-            style={{
-              marginTop: '24px',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '16px',
-            }}
+            className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
           >
-            {/* Empty KPI placeholders */}
-            {['Active Users', 'Monthly Usage', 'Error Rate', 'Support Tickets'].map((title) => (
+            {/* Empty KPI placeholders with staggered entrance */}
+            {['Active Users', 'Monthly Usage', 'Error Rate', 'Support Tickets'].map((title, index) => (
               <div
                 key={title}
-                className="card"
+                className={`card animate-scale-in animate-delay-${(index + 1) * 100}`}
                 style={{
-                  padding: '20px',
+                  padding: '24px',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  minHeight: '120px',
-                  backgroundColor: 'var(--slate-50)',
-                  border: '1px dashed var(--border-strong)',
+                  minHeight: '140px',
+                  background: 'linear-gradient(135deg, var(--slate-50) 0%, rgba(248, 250, 252, 0.8) 100%)',
+                  border: '2px dashed var(--border-strong)',
                 }}
               >
-                <p style={{ fontSize: '13px', color: 'var(--foreground-muted)', margin: 0 }}>
-                  {title}
-                </p>
-                <p style={{ fontSize: '24px', fontWeight: 600, color: 'var(--slate-300)', margin: '8px 0 0 0' }}>
-                  —
-                </p>
-                <p style={{ fontSize: '11px', color: 'var(--slate-400)', margin: '8px 0 0 0' }}>
-                  No data yet
-                </p>
+                <div className="animate-float" style={{ animationDelay: `${index * 0.5}s` }}>
+                  <p style={{ fontSize: '13px', color: 'var(--foreground-muted)', margin: 0, fontWeight: 500 }}>
+                    {title}
+                  </p>
+                  <p style={{ fontSize: '28px', fontWeight: 700, color: 'var(--slate-300)', margin: '12px 0 0 0' }}>
+                    —
+                  </p>
+                  <p style={{ fontSize: '11px', color: 'var(--slate-400)', margin: '8px 0 0 0' }}>
+                    No data yet
+                  </p>
+                </div>
               </div>
             ))}
           </div>
-        </>
+        </div>
       ) : (
         <>
-          {/* Tenant Isolation Notice */}
-          <div style={{ marginBottom: '16px' }}>
+          {/* Tenant Isolation Notice with Animation */}
+          <div 
+            ref={constraintsAnimation.elementRef}
+            className={`mb-4 ${constraintsAnimation.isVisible ? 'animate-slide-in-up' : 'opacity-0'}`}
+          >
             <TenantIsolationNotice />
           </div>
 
-          {/* KPI Cards */}
-          <section style={{ marginBottom: '24px' }}>
+          {/* Enhanced KPI Cards with Staggered Animation */}
+          <section 
+            ref={kpiAnimation.elementRef}
+            className={`mb-6 ${kpiAnimation.isVisible ? 'animate-slide-in-up animate-delay-100' : 'opacity-0'}`}
+          >
             <KPIGrid />
           </section>
 
-          {/* System Constraints - Real operational limits */}
-          <SystemConstraints />
+          {/* System Constraints with Premium Animation */}
+          <div 
+            ref={constraintsAnimation.elementRef}
+            className={`${constraintsAnimation.isVisible ? 'animate-slide-in-up animate-delay-200' : 'opacity-0'}`}
+          >
+            <SystemConstraints />
+          </div>
 
-          {/* Insight Card - Actionable Analytics */}
-          <section style={{ marginBottom: '24px' }}>
+          {/* Insight Card with Floating Animation */}
+          <section 
+            ref={insightAnimation.elementRef}
+            className={`mb-6 ${insightAnimation.isVisible ? 'animate-slide-in-up animate-delay-300' : 'opacity-0'}`}
+          >
             <InsightCard />
           </section>
 
-          {/* Main Content Grid */}
+          {/* Main Content Grid with Premium Layout */}
           <div
+            ref={mainContentAnimation.elementRef}
+            className={`${mainContentAnimation.isVisible ? 'animate-fade-in animate-delay-400' : 'opacity-0'}`}
             style={{
               display: 'grid',
               gridTemplateColumns: '2fr 1fr',
               gap: '24px',
             }}
           >
-            {/* Left Column */}
+            {/* Left Column with Staggered Content */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <UsageChart />
+              <div className="animate-slide-in-left animate-delay-500">
+                <UsageChart />
+              </div>
 
-              {/* Admin-only Panel */}
-              <PermissionGate
-                requiredRole="admin"
-                fallback={
-                  <div className="card" style={{ padding: '20px' }}>
-                    <AccessDenied
-                      title="Admin Panel"
-                      description="Quick actions are only available to administrators."
-                      requiredRole="Admin"
-                    />
-                  </div>
-                }
-              >
-                <AdminActions />
-              </PermissionGate>
+              {/* Admin-only Panel with Enhanced Styling */}
+              <div className="animate-slide-in-left animate-delay-600">
+                <PermissionGate
+                  requiredRole="admin"
+                  fallback={
+                    <div className="card glass" style={{ padding: '20px' }}>
+                      <AccessDenied
+                        title="Admin Panel"
+                        description="Quick actions are only available to administrators."
+                        requiredRole="Admin"
+                      />
+                    </div>
+                  }
+                >
+                  <AdminActions />
+                </PermissionGate>
+              </div>
             </div>
 
-            {/* Right Column */}
+            {/* Right Column with Staggered Content */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <TeamActivity />
-              <AuditFeed />
+              <div className="animate-slide-in-right animate-delay-500">
+                <TeamActivity />
+              </div>
+              <div className="animate-slide-in-right animate-delay-600">
+                <AuditFeed />
+              </div>
             </div>
           </div>
         </>
       )}
 
-      {/* Manager-only section example with destructive action */}
+      {/* Enhanced Manager-only Section */}
       <PermissionGate requiredRole="manager">
-        <section style={{ marginTop: '24px' }}>
-          <div className="card">
+        <section className="animate-slide-in-up animate-delay-700" style={{ marginTop: '24px' }}>
+          <div className="card border-gradient">
             <div className="card-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--foreground)', margin: 0 }}>
+                <h3 className="text-gradient" style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>
                   Project Management
                 </h3>
-                <span className="badge badge-manager">Manager+</span>
+                <span className="badge badge-manager animate-pulse-glow">Manager+</span>
               </div>
-              <p style={{ fontSize: '13px', color: 'var(--foreground-muted)', margin: '4px 0 0 0' }}>
-                Create and manage team projects
+              <p style={{ fontSize: '14px', color: 'var(--foreground-muted)', margin: '6px 0 0 0' }}>
+                Create and manage team projects with enhanced controls
               </p>
             </div>
             <div className="card-body">
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <button
-                  className="btn btn-secondary"
+                  className="btn btn-secondary glow-hover"
                   onClick={() => addToast('Navigating to projects list...', 'info')}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -252,7 +290,7 @@ export default function Dashboard() {
 
                 <PermissionGate requiredPermission="canCreate">
                   <button
-                    className="btn btn-primary"
+                    className="btn btn-primary animate-pulse-glow"
                     onClick={() => addToast('Opening project creation wizard...', 'success')}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -263,10 +301,9 @@ export default function Dashboard() {
                   </button>
                 </PermissionGate>
 
-                {/* Edit action - available to managers */}
                 <PermissionGate requiredPermission="canEdit">
                   <button
-                    className="btn btn-secondary"
+                    className="btn btn-secondary glow-hover"
                     onClick={() => addToast('Edit mode enabled. Select a project to edit.', 'info')}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -277,14 +314,15 @@ export default function Dashboard() {
                   </button>
                 </PermissionGate>
 
-                {/* DESTRUCTIVE ACTION - explicit permission denial for non-admins */}
+                {/* Enhanced Delete Button with Premium Styling */}
                 {hasPermission('canDelete') ? (
                   <button
-                    className="btn btn-secondary"
+                    className="btn btn-secondary glow-hover"
                     onClick={() => addToast('Simulating deletion... Project has been removed.', 'error')}
                     style={{
                       color: 'var(--red-600)',
                       borderColor: 'var(--red-200)',
+                      background: 'linear-gradient(135deg, var(--red-50) 0%, rgba(254, 242, 242, 0.8) 100%)',
                     }}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -302,6 +340,7 @@ export default function Dashboard() {
                     style={{
                       color: 'var(--red-400)',
                       borderColor: 'var(--red-100)',
+                      opacity: 0.6,
                     }}
                     title="Admin access required to delete projects"
                   >
@@ -315,13 +354,12 @@ export default function Dashboard() {
                   </button>
                 )}
 
-                {/* Archive action - also admin only */}
                 <DisabledAction
                   reason="You don't have permission to archive projects"
                   disabled={!hasPermission('canDelete')}
                 >
                   <button
-                    className="btn btn-ghost"
+                    className="btn btn-ghost glow-hover"
                     onClick={() => addToast('Projects archived successfully.', 'info')}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -334,38 +372,36 @@ export default function Dashboard() {
                 </DisabledAction>
               </div>
 
-              {/* Permission summary for demonstration */}
-              <div
-                style={{
-                  marginTop: '20px',
-                  padding: '14px 16px',
-                  backgroundColor: 'var(--slate-50)',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border)',
-                }}
-              >
-                <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--foreground-muted)', margin: '0 0 10px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {/* Enhanced Permission Summary */}
+              <div className="glass animate-slide-in-up animate-delay-800" style={{
+                marginTop: '24px',
+                padding: '20px',
+                borderRadius: 'var(--radius-lg)',
+              }}>
+                <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--foreground-muted)', margin: '0 0 16px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Your Permissions
                 </p>
-                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                   {[
                     { label: 'View', allowed: hasPermission('canView') },
                     { label: 'Create', allowed: hasPermission('canCreate') },
                     { label: 'Edit', allowed: hasPermission('canEdit') },
                     { label: 'Delete', allowed: hasPermission('canDelete') },
-                  ].map((perm) => (
-                    <div key={perm.label} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      {perm.allowed ? (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--emerald-600)" strokeWidth="2">
-                          <path d="M20 6L9 17l-5-5" />
-                        </svg>
-                      ) : (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red-500)" strokeWidth="2">
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      )}
-                      <span style={{ fontSize: '13px', color: perm.allowed ? 'var(--foreground)' : 'var(--foreground-muted)' }}>
+                  ].map((perm, index) => (
+                    <div key={perm.label} className={`animate-scale-in animate-delay-${(index + 9) * 100}`} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div className={perm.allowed ? 'animate-pulse-glow' : ''}>
+                        {perm.allowed ? (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--emerald-600)" strokeWidth="2">
+                            <path d="M20 6L9 17l-5-5" />
+                          </svg>
+                        ) : (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red-500)" strokeWidth="2">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                        )}
+                      </div>
+                      <span style={{ fontSize: '14px', color: perm.allowed ? 'var(--foreground)' : 'var(--foreground-muted)', fontWeight: perm.allowed ? 500 : 400 }}>
                         {perm.label}
                       </span>
                     </div>
@@ -377,10 +413,10 @@ export default function Dashboard() {
         </section>
       </PermissionGate>
 
-      {/* Viewer empty state for project management */}
+      {/* Enhanced Viewer Empty State */}
       {currentRole === 'viewer' && (
-        <section style={{ marginTop: '24px' }}>
-          <div className="card" style={{ padding: '20px' }}>
+        <section className="animate-slide-in-up animate-delay-700" style={{ marginTop: '24px' }}>
+          <div className="card glass" style={{ padding: '20px' }}>
             <AccessDenied
               title="Project Management"
               description="You need Manager or Admin access to create, edit, or delete projects. Contact your administrator to request elevated permissions."
@@ -390,7 +426,7 @@ export default function Dashboard() {
         </section>
       )}
 
-      {/* Permission Denied Modal - shown when Manager attempts delete */}
+      {/* Enhanced Permission Denied Modal */}
       <PermissionDeniedModal
         isOpen={showPermissionDenied}
         onClose={() => setShowPermissionDenied(false)}

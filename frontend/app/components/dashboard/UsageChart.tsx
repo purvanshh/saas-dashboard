@@ -10,7 +10,18 @@ export function UsageChart() {
 
   // Use mock data based on current organization
   const orgId = currentOrganization?.id || 'org_1';
-  const data: UsageDataPoint[] = usageTrendData[orgId] || usageTrendData['org_1'];
+  const allData: UsageDataPoint[] = usageTrendData[orgId] || usageTrendData['org_1'];
+  
+  // Filter data based on selected time period
+  const data = useMemo(() => {
+    if (days === 7) {
+      // Return last 7 days
+      return allData.slice(-7);
+    } else {
+      // Return all 30 days
+      return allData;
+    }
+  }, [allData, days]);
 
   const chartDimensions = useMemo(() => {
     const width = 600;
@@ -68,9 +79,22 @@ export function UsageChart() {
     return value.toFixed(0);
   };
 
+  const formatDateLabel = (dateStr: string, index: number) => {
+    if (days === 7) {
+      // For 7 days, show day abbreviation
+      return dateStr.split(' ')[1] || `D${index + 1}`;
+    } else {
+      // For 30 days, show fewer labels to avoid crowding
+      if (index % 5 === 0 || index === data.length - 1) {
+        return dateStr.split(' ')[1] || `D${index + 1}`;
+      }
+      return '';
+    }
+  };
+
   if (tenantLoading) {
     return (
-      <div className="card">
+      <div className="card animate-slide-in-up animate-delay-200">
         <div className="card-header">
           <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--foreground)', margin: 0 }}>
             Usage Trend
@@ -81,7 +105,7 @@ export function UsageChart() {
         </div>
         <div className="card-body">
           <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <p style={{ color: 'var(--foreground-muted)' }}>Loading...</p>
+            <div className="loading-spinner" />
           </div>
         </div>
       </div>
@@ -89,27 +113,35 @@ export function UsageChart() {
   }
 
   return (
-    <div className="card">
+    <div className="card animate-slide-in-up animate-delay-200">
       <div className="card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--foreground)', margin: 0 }}>
             Usage Trend
           </h3>
           <p style={{ fontSize: '13px', color: 'var(--foreground-muted)', margin: '4px 0 0 0' }}>
-            API requests over the last {days} days
+            API requests over the last {days} days • {data.length} data points
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
-            className={`btn ${days === 7 ? 'btn-secondary' : 'btn-ghost'}`}
-            style={{ padding: '6px 10px', fontSize: '13px' }}
+            className={`btn ${days === 7 ? 'btn-primary' : 'btn-ghost'} glow-hover`}
+            style={{ 
+              padding: '6px 12px', 
+              fontSize: '13px',
+              transition: 'all var(--micro-duration) var(--micro-easing)',
+            }}
             onClick={() => setDays(7)}
           >
             7 Days
           </button>
           <button
-            className={`btn ${days === 30 ? 'btn-secondary' : 'btn-ghost'}`}
-            style={{ padding: '6px 10px', fontSize: '13px' }}
+            className={`btn ${days === 30 ? 'btn-primary' : 'btn-ghost'} glow-hover`}
+            style={{ 
+              padding: '6px 12px', 
+              fontSize: '13px',
+              transition: 'all var(--micro-duration) var(--micro-easing)',
+            }}
             onClick={() => setDays(30)}
           >
             30 Days
@@ -125,13 +157,14 @@ export function UsageChart() {
           style={{ overflow: 'visible' }}
         >
           <defs>
-            <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="var(--blue-500)" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="var(--blue-500)" stopOpacity="0" />
+            <linearGradient id={`areaGradient-${orgId}`} x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
             </linearGradient>
           </defs>
 
           <g transform={`translate(${padding.left}, ${padding.top})`}>
+            {/* Grid lines */}
             {tickValues.map((tick, i) => (
               <g key={i}>
                 <line
@@ -139,48 +172,111 @@ export function UsageChart() {
                   y1={scales.yScale(tick)}
                   x2={chartWidth}
                   y2={scales.yScale(tick)}
-                  className="chart-grid-line"
+                  stroke="var(--border)"
+                  strokeWidth="1"
                   strokeDasharray="4,4"
+                  opacity="0.5"
                 />
                 <text
                   x={-10}
                   y={scales.yScale(tick)}
                   textAnchor="end"
                   alignmentBaseline="middle"
-                  className="chart-axis-label"
+                  fill="var(--foreground-muted)"
+                  fontSize="11px"
                 >
                   {formatValue(tick)}
                 </text>
               </g>
             ))}
 
-            {data.map((d, i) => (
-              <text
-                key={i}
-                x={scales.xScale(i)}
-                y={chartHeight + 20}
-                textAnchor="middle"
-                className="chart-axis-label"
-              >
-                {d.date.split(' ')[1]}
-              </text>
-            ))}
+            {/* X-axis labels */}
+            {data.map((d, i) => {
+              const label = formatDateLabel(d.date, i);
+              if (!label) return null;
+              return (
+                <text
+                  key={i}
+                  x={scales.xScale(i)}
+                  y={chartHeight + 20}
+                  textAnchor="middle"
+                  fill="var(--foreground-muted)"
+                  fontSize="11px"
+                >
+                  {label}
+                </text>
+              );
+            })}
 
-            <path d={areaPath} fill="url(#areaGradient)" />
+            {/* Area fill */}
+            <path 
+              d={areaPath} 
+              fill={`url(#areaGradient-${orgId})`}
+              className="animate-scale-in"
+            />
 
-            <path d={linePath} className="chart-line" />
+            {/* Line */}
+            <path 
+              d={linePath} 
+              fill="none"
+              stroke="var(--accent)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="animate-slide-in-left"
+              style={{
+                filter: 'drop-shadow(0 2px 4px rgba(255, 107, 53, 0.2))',
+              }}
+            />
 
+            {/* Data points */}
             {data.map((d, i) => (
               <circle
                 key={i}
                 cx={scales.xScale(i)}
                 cy={scales.yScale(d.value)}
                 r="4"
-                className="chart-dot"
-              />
+                fill="var(--accent)"
+                stroke="white"
+                strokeWidth="2"
+                className={`animate-scale-in animate-delay-${i * 50}`}
+                style={{
+                  filter: 'drop-shadow(0 2px 4px rgba(255, 107, 53, 0.3))',
+                  cursor: 'pointer',
+                }}
+              >
+                <title>{`${d.date}: ${formatValue(d.value)} requests`}</title>
+              </circle>
             ))}
           </g>
         </svg>
+        
+        {/* Summary stats */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          marginTop: '16px',
+          padding: '12px 0',
+          borderTop: '1px solid var(--border)',
+          fontSize: '13px',
+          color: 'var(--foreground-muted)'
+        }}>
+          <span>
+            <strong style={{ color: 'var(--foreground)' }}>
+              {formatValue(Math.max(...data.map(d => d.value)))}
+            </strong> peak
+          </span>
+          <span>
+            <strong style={{ color: 'var(--foreground)' }}>
+              {formatValue(data.reduce((sum, d) => sum + d.value, 0) / data.length)}
+            </strong> average
+          </span>
+          <span>
+            <strong style={{ color: 'var(--foreground)' }}>
+              {formatValue(Math.min(...data.map(d => d.value)))}
+            </strong> minimum
+          </span>
+        </div>
       </div>
     </div>
   );

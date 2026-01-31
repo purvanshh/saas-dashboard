@@ -1,17 +1,20 @@
 'use client';
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { TopNav } from './TopNav';
+import { ProfileModal } from '../ui/ProfileModal';
 
 interface DashboardLayoutProps {
     children: ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
+    const [profileModalOpen, setProfileModalOpen] = useState(false);
+
     return (
         <div style={{ minHeight: '100vh', background: 'var(--background)' }}>
-            <Sidebar />
+            <Sidebar onProfileSettingsClick={() => setProfileModalOpen(true)} />
             <TopNav />
             <main
                 style={{
@@ -29,6 +32,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     {children}
                 </div>
             </main>
+            <ProfileModal isOpen={profileModalOpen} onClose={() => setProfileModalOpen(false)} />
         </div>
     );
 }

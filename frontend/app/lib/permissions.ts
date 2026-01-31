@@ -62,7 +62,7 @@ export const navigationItems: NavItem[] = [
   { id: 'analytics', label: 'Analytics', icon: 'analytics', href: '/analytics' },
   { id: 'projects', label: 'Projects', icon: 'projects', href: '/projects' },
   { id: 'users', label: 'Users', icon: 'users', href: '/users', requiredPermission: 'canManageUsers' },
-  { id: 'settings', label: 'Organization Settings', icon: 'settings', href: '/settings', requiredPermission: 'canManageOrg' },
+  { id: 'settings', label: 'Profile Settings', icon: 'settings', href: '/settings' },
   { id: 'billing', label: 'Billing', icon: 'billing', href: '/billing', requiredPermission: 'canViewBilling' },
   { id: 'audit', label: 'Audit Logs', icon: 'audit', href: '/audit', requiredPermission: 'canViewAuditLogs' },
 ];

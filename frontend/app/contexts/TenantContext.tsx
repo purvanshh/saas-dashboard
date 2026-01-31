@@ -19,6 +19,7 @@ interface TenantContextType {
   currentOrganization: Organization | null;
   organizations: Organization[];
   loading: boolean;
+  mounted: boolean;
   switchOrganization: (orgId: string) => Promise<{ error?: string }>;
   refreshTenant: () => Promise<void>;
 }
@@ -43,71 +44,96 @@ function saveTenantToStorage(orgId: string): void {
   }
 }
 
+// Default organization for consistent SSR/CSR
+const DEFAULT_ORG: Organization = {
+  id: 'org_1',
+  name: 'Acme Corp',
+  slug: 'acme-corp',
+  plan: 'professional',
+  memberCount: 12,
+};
+
 export function TenantProvider({ children }: { children: ReactNode }) {
-  // Initialize store on mount
+  const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Initialize with consistent default values
+  const [organizations, setOrganizations] = useState<Organization[]>([DEFAULT_ORG]);
+  const [currentOrganization, setCurrentOrganization] = useState<Organization>(DEFAULT_ORG);
+
+  // Mount effect
   useEffect(() => {
+    // Initialize store and load data
     initializeStore();
-  }, []);
-
-  // Get organizations from mockDb
-  const [organizations, setOrganizations] = useState<Organization[]>(() => {
-    const orgs = getOrganizations();
-    return orgs;
-  });
-
-  // Load stored tenant preference
-  const [currentOrganization, setCurrentOrganization] = useState<Organization | null>(() => {
-    // Always start with default for consistency (SSR safe)
-    const orgs = getOrganizations();
-    return orgs[0] || null;
-  });
-
-
-
-  // Hydrate from storage on mount
-  useEffect(() => {
-    const orgs = getOrganizations();
-    const storedOrgId = loadTenantFromStorage();
-
-    if (storedOrgId) {
-      const stored = orgs.find(o => o.id === storedOrgId);
-      // Only update if stored is valid and different from initial state (which is default)
-      if (stored) {
-        // Defer update to avoid sync-in-effect linter error
-        setTimeout(() => setCurrentOrganization(stored), 0);
-      }
-    }
-  }, []); // Run once on mount
-
-  const refreshTenant = useCallback(async () => {
     const orgs = getOrganizations();
     setOrganizations(orgs);
 
-    // Update current org if it still exists
-    if (currentOrganization) {
-      const updated = orgs.find(o => o.id === currentOrganization.id);
-      if (updated) {
-        setCurrentOrganization(updated);
+    // Load from storage after mount
+    const storedOrgId = loadTenantFromStorage();
+    if (storedOrgId) {
+      const stored = orgs.find(o => o.id === storedOrgId);
+      if (stored) {
+        setCurrentOrganization(stored);
       }
+    } else if (orgs.length > 0 && orgs[0].id !== DEFAULT_ORG.id) {
+      // If no stored preference and actual orgs differ from default, use first actual org
+      setCurrentOrganization(orgs[0]);
     }
-  }, [currentOrganization]);
+
+    setMounted(true);
+  }, []);
 
   const switchOrganization = useCallback(async (orgId: string): Promise<{ error?: string }> => {
     const org = organizations.find(o => o.id === orgId);
-    if (org) {
-      setCurrentOrganization(org);
-      saveTenantToStorage(orgId);
-      return {};
+    if (!org) {
+      return { error: 'Organization not found' };
     }
-    return { error: 'Organization not found' };
-  }, [organizations]);
+
+    setLoading(true);
+    try {
+      // Simulate async operation
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      setCurrentOrganization(org);
+      if (mounted) {
+        saveTenantToStorage(orgId);
+      }
+      
+      return {};
+    } catch (error) {
+      return { error: 'Failed to switch organization' };
+    } finally {
+      setLoading(false);
+    }
+  }, [organizations, mounted]);
+
+  const refreshTenant = useCallback(async (): Promise<void> => {
+    setLoading(true);
+    try {
+      // Simulate refresh
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const orgs = getOrganizations();
+      setOrganizations(orgs);
+      
+      // Ensure current org is still valid
+      if (currentOrganization) {
+        const updatedOrg = orgs.find(o => o.id === currentOrganization.id);
+        if (updatedOrg) {
+          setCurrentOrganization(updatedOrg);
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [currentOrganization]);
 
   return (
     <TenantContext.Provider
       value={{
         currentOrganization,
         organizations,
-        loading: false,
+        loading,
+        mounted,
         switchOrganization,
         refreshTenant,
       }}
@@ -120,13 +146,14 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 export function useTenant() {
   const context = useContext(TenantContext);
   if (context === undefined) {
-    const orgs = getOrganizations();
+    // Default fallback if not wrapped
     return {
-      currentOrganization: orgs[0] || null,
-      organizations: orgs,
+      currentOrganization: DEFAULT_ORG,
+      organizations: [DEFAULT_ORG],
       loading: false,
-      switchOrganization: async () => ({ error: 'Tenant not initialized' }),
-      refreshTenant: async () => { },
+      mounted: false,
+      switchOrganization: async () => ({ error: 'Context not available' }),
+      refreshTenant: async () => {},
     };
   }
   return context;

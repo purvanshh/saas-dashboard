@@ -27,6 +27,7 @@ interface AuthContextType {
   setRole: (role: Role) => void;
   switchUser: (userId: string) => void;
   availableUsers: User[];
+  mounted: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,21 +56,46 @@ function saveAuthToStorage(auth: StoredAuth): void {
   }
 }
 
+// Default user for consistent SSR/CSR
+const DEFAULT_USER: User = {
+  id: 'user_1',
+  name: 'Sarah Chen',
+  email: 'sarah@acme.com',
+  role: 'admin',
+  organizationId: 'org_1',
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { currentOrganization } = useTenant();
+  const { currentOrganization, mounted: tenantMounted } = useTenant();
+  const [mounted, setMounted] = useState(false);
 
-  // Get stored auth state
-  const [storedAuth] = useState<StoredAuth>(() => loadAuthFromStorage());
+  // Initialize with consistent default values
+  const [currentRole, setCurrentRole] = useState<Role>('admin');
+  const [currentUserId, setCurrentUserId] = useState<string>('user_1');
 
-  // State
-  const [currentRole, setCurrentRole] = useState<Role>(storedAuth.role || 'admin');
-  const [currentUserId, setCurrentUserId] = useState<string | null>(storedAuth.userId || null);
+  // Mount effect
+  useEffect(() => {
+    setMounted(true);
+    
+    // Load from storage after mount
+    const storedAuth = loadAuthFromStorage();
+    if (storedAuth.role) {
+      setCurrentRole(storedAuth.role);
+    }
+    if (storedAuth.userId) {
+      setCurrentUserId(storedAuth.userId);
+    }
+  }, []);
 
   // Get users for current org from mockDb (derived synchronously)
   const availableUsers = React.useMemo(() => {
-    if (!currentOrganization) return [];
+    if (!currentOrganization || !mounted) {
+      // Return default user during SSR or before mount
+      return [DEFAULT_USER];
+    }
+    
     const store = getStore();
-    return store.users
+    const users = store.users
       .filter(u => u.organizationId === currentOrganization.id && u.isActive)
       .map(u => ({
         id: u.id,
@@ -79,34 +105,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role: u.role,
         organizationId: u.organizationId,
       }));
-  }, [currentOrganization]);
+    
+    return users.length > 0 ? users : [DEFAULT_USER];
+  }, [currentOrganization, mounted]);
 
-  // Effect 2: Ensure valid current user/role
+  // Ensure valid current user/role after mount and org changes
   useEffect(() => {
+    if (!mounted || !tenantMounted) return;
+    
     if (availableUsers.length > 0) {
-      // If no user selected, or selected user not in list (e.g. org switch), reset
       const isValidUser = currentUserId && availableUsers.find(u => u.id === currentUserId);
 
       if (!isValidUser) {
-        // Try to find user matching stored role, or take first
         const matchingUser = availableUsers.find(u => u.role === currentRole) || availableUsers[0];
         if (matchingUser) {
-          // Defer update to avoid sync-in-effect warning
-          setTimeout(() => {
-            setCurrentUserId(matchingUser.id);
-            setCurrentRole(matchingUser.role);
-          }, 0);
+          setCurrentUserId(matchingUser.id);
+          setCurrentRole(matchingUser.role);
         }
       }
     }
-  }, [availableUsers, currentUserId, currentRole]);
+  }, [availableUsers, currentUserId, currentRole, mounted, tenantMounted]);
 
-  // Current user object
-  const currentUser: User | null = availableUsers.find(u => u.id === currentUserId) || availableUsers[0] || null;
+  // Current user object - always return a valid user
+  const currentUser: User = availableUsers.find(u => u.id === currentUserId) || availableUsers[0] || DEFAULT_USER;
 
-  // Override role manually (for demo purposes)
-  const effectiveRole = currentRole;
-  const permissions = rolePermissions[effectiveRole];
+  const permissions = rolePermissions[currentRole];
 
   const hasPermission = useCallback((permission: keyof Permission): boolean => {
     return permissions[permission];
@@ -114,36 +137,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const setRole = useCallback((role: Role) => {
     setCurrentRole(role);
-    saveAuthToStorage({ userId: currentUserId || undefined, role });
+    if (mounted) {
+      saveAuthToStorage({ userId: currentUserId, role });
+    }
 
     // Find a user with this role in the current org
     const userWithRole = availableUsers.find(u => u.role === role);
     if (userWithRole) {
       setCurrentUserId(userWithRole.id);
     }
-  }, [availableUsers, currentUserId]);
+  }, [availableUsers, currentUserId, mounted]);
 
   const switchUser = useCallback((userId: string) => {
     const user = availableUsers.find(u => u.id === userId);
     if (user) {
       setCurrentUserId(userId);
       setCurrentRole(user.role);
-      saveAuthToStorage({ userId, role: user.role });
+      if (mounted) {
+        saveAuthToStorage({ userId, role: user.role });
+      }
     }
-  }, [availableUsers]);
+  }, [availableUsers, mounted]);
 
   return (
     <AuthContext.Provider
       value={{
         currentUser,
-        currentRole: effectiveRole,
-        loading: false,
+        currentRole,
+        loading: !mounted,
         isAuthenticated: true,
         permissions,
         hasPermission,
         setRole,
         switchUser,
         availableUsers,
+        mounted,
       }}
     >
       {children}
@@ -157,13 +185,7 @@ export function useAuth() {
     // Default fallback if not wrapped
     const permissions = rolePermissions['admin'];
     return {
-      currentUser: {
-        id: 'user_1',
-        name: 'Sarah Chen',
-        email: 'sarah@acme.com',
-        role: 'admin' as Role,
-        organizationId: 'org_1',
-      },
+      currentUser: DEFAULT_USER,
       currentRole: 'admin' as Role,
       loading: false,
       isAuthenticated: true,
@@ -171,7 +193,8 @@ export function useAuth() {
       hasPermission: (permission: keyof Permission) => permissions[permission],
       setRole: () => { },
       switchUser: () => { },
-      availableUsers: [],
+      availableUsers: [DEFAULT_USER],
+      mounted: false,
     };
   }
   return context;

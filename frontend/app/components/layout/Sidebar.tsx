@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { navigationItems, canAccessNavItem, NavItem } from '../../lib/permissions';
 import { usePathname } from 'next/navigation';
 
-// Icons
+// Icons with enhanced styling
 const icons: Record<string, React.ReactNode> = {
     dashboard: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -39,8 +39,8 @@ const icons: Record<string, React.ReactNode> = {
     ),
     settings: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-            <circle cx="12" cy="12" r="3" />
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
         </svg>
     ),
     billing: (
@@ -63,38 +63,60 @@ const icons: Record<string, React.ReactNode> = {
     ),
 };
 
-function NavItemComponent({ item, isActive }: { item: NavItem; isActive: boolean }) {
+function NavItemComponent({ item, isActive, index, onModalClick }: { item: NavItem; isActive: boolean; index: number; onModalClick?: () => void }) {
     const { currentRole } = useAuth();
+    const [isHovered, setIsHovered] = useState(false);
     const hasAccess = currentRole ? canAccessNavItem(currentRole, item) : false;
 
     if (!hasAccess) {
         return (
-            <div className="tooltip-wrapper">
+            <div
+                className={`tooltip-wrapper animate-slide-in-left animate-delay-${(index + 2) * 100}`}
+                style={{
+                    position: 'relative',
+                }}
+            >
                 <div
                     style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '12px',
-                        padding: '10px 12px',
-                        borderRadius: '8px',
+                        padding: '12px 16px',
+                        borderRadius: 'var(--radius-lg)',
                         color: 'rgba(255,255,255,0.3)',
                         cursor: 'not-allowed',
                         fontSize: '14px',
+                        fontWeight: 500,
+                        transition: 'all var(--micro-duration) var(--micro-easing)',
+                        border: '1px solid transparent',
                     }}
                 >
-                    {icons[item.icon]}
+                    <div style={{ opacity: 0.5 }}>
+                        {icons[item.icon]}
+                    </div>
                     <span>{item.label}</span>
-                    <span style={{ marginLeft: 'auto' }}>{icons.lock}</span>
+                    <span style={{ marginLeft: 'auto', opacity: 0.6 }}>{icons.lock}</span>
                 </div>
                 <div
-                    className="tooltip"
+                    className="tooltip glass-dark"
                     style={{
+                        position: 'absolute',
                         bottom: 'auto',
                         top: '50%',
                         left: '100%',
                         transform: 'translateY(-50%)',
-                        marginLeft: '8px',
+                        marginLeft: '12px',
                         marginBottom: 0,
+                        padding: '8px 12px',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        color: 'rgba(255,255,255,0.9)',
+                        whiteSpace: 'nowrap',
+                        opacity: 0,
+                        visibility: 'hidden',
+                        transition: 'all var(--micro-duration) var(--micro-easing)',
+                        zIndex: 50,
                     }}
                 >
                     Admin access required
@@ -103,93 +125,238 @@ function NavItemComponent({ item, isActive }: { item: NavItem; isActive: boolean
         );
     }
 
+    // If this item should open a modal instead of navigating
+    if (item.id === 'settings' && onModalClick) {
+        return (
+            <button
+                onClick={onModalClick}
+                className={`animate-slide-in-left animate-delay-${(index + 2) * 100}`}
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px 16px',
+                    borderRadius: 'var(--radius-lg)',
+                    color: isActive ? '#ffffff' : 'rgba(255,255,255,0.7)',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    fontWeight: isActive ? 600 : 500,
+                    background: isActive
+                        ? 'linear-gradient(135deg, rgba(255, 107, 53, 0.2) 0%, rgba(255, 107, 53, 0.1) 100%)'
+                        : 'transparent',
+                    border: isActive
+                        ? '1px solid rgba(255, 107, 53, 0.3)'
+                        : '1px solid transparent',
+                    transition: 'all var(--micro-duration) var(--micro-easing)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left',
+                }}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+            >
+                {/* Active indicator */}
+                {isActive && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            left: 0,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: '3px',
+                            height: '20px',
+                            background: 'var(--accent)',
+                            borderRadius: '0 2px 2px 0',
+                        }}
+                    />
+                )}
+
+                {/* Hover shimmer effect */}
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: isHovered ? '0%' : '-100%',
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent)',
+                        transition: 'left var(--spring-duration) var(--spring-easing)',
+                        pointerEvents: 'none',
+                    }}
+                />
+
+                <div
+                    style={{
+                        color: isActive ? 'var(--accent)' : 'inherit',
+                        transition: 'color var(--micro-duration) var(--micro-easing)',
+                    }}
+                >
+                    {icons[item.icon]}
+                </div>
+                <span>{item.label}</span>
+            </button>
+        );
+    }
+
     return (
         <a
             href={item.href}
+            className={`animate-slide-in-left animate-delay-${(index + 2) * 100}`}
             style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
-                padding: '10px 12px',
-                borderRadius: '8px',
+                padding: '12px 16px',
+                borderRadius: 'var(--radius-lg)',
                 color: isActive ? '#ffffff' : 'rgba(255,255,255,0.7)',
                 textDecoration: 'none',
                 fontSize: '14px',
-                fontWeight: isActive ? 500 : 400,
-                backgroundColor: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
-                transition: 'all 0.15s ease',
+                fontWeight: isActive ? 600 : 500,
+                background: isActive
+                    ? 'linear-gradient(135deg, rgba(255, 107, 53, 0.2) 0%, rgba(255, 107, 53, 0.1) 100%)'
+                    : isHovered
+                        ? 'rgba(255,255,255,0.08)'
+                        : 'transparent',
+                border: isActive
+                    ? '1px solid rgba(255, 107, 53, 0.3)'
+                    : '1px solid transparent',
+                transition: 'all var(--micro-duration) var(--micro-easing)',
+                position: 'relative',
+                overflow: 'hidden',
+                transform: isHovered ? 'translateX(4px)' : 'translateX(0)',
+                boxShadow: isActive ? '0 4px 12px rgba(255, 107, 53, 0.2)' : 'none',
             }}
-            onMouseEnter={(e) => {
-                if (!isActive) {
-                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
-                    e.currentTarget.style.color = '#ffffff';
-                }
-            }}
-            onMouseLeave={(e) => {
-                if (!isActive) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
-                }
-            }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
         >
-            {icons[item.icon]}
+            {/* Active indicator */}
+            {isActive && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: '3px',
+                        height: '20px',
+                        background: 'var(--accent)',
+                        borderRadius: '0 2px 2px 0',
+                    }}
+                />
+            )}
+
+            {/* Hover shimmer effect */}
+            <div
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: isHovered ? '0%' : '-100%',
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent)',
+                    transition: 'left var(--spring-duration) var(--spring-easing)',
+                    pointerEvents: 'none',
+                }}
+            />
+
+            <div
+                style={{
+                    color: isActive ? 'var(--accent)' : 'inherit',
+                    transition: 'color var(--micro-duration) var(--micro-easing)',
+                }}
+            >
+                {icons[item.icon]}
+            </div>
             <span>{item.label}</span>
         </a>
     );
 }
 
-export function Sidebar() {
+interface SidebarProps {
+    onProfileSettingsClick?: () => void;
+}
+
+export function Sidebar({ onProfileSettingsClick }: SidebarProps) {
     const pathname = usePathname();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     return (
         <aside
+            className={`glass-dark ${mounted ? 'animate-slide-in-left' : 'opacity-0'}`}
             style={{
                 position: 'fixed',
                 top: 0,
                 left: 0,
                 width: 'var(--sidebar-width)',
                 height: '100vh',
-                backgroundColor: 'var(--slate-900)',
-                borderRight: '1px solid rgba(255,255,255,0.08)',
+                background: 'linear-gradient(180deg, var(--slate-900) 0%, rgba(15, 23, 42, 0.95) 100%)',
+                borderRight: '1px solid rgba(255, 107, 53, 0.1)',
                 display: 'flex',
                 flexDirection: 'column',
                 zIndex: 40,
+                backdropFilter: 'blur(20px)',
             }}
         >
-            {/* Logo */}
+            {/* Premium Logo Section */}
             <div
+                className="animate-slide-in-left animate-delay-100"
                 style={{
-                    padding: '20px',
-                    borderBottom: '1px solid rgba(255,255,255,0.08)',
+                    padding: '24px 20px',
+                    borderBottom: '1px solid rgba(255, 107, 53, 0.1)',
+                    position: 'relative',
                 }}
             >
+                {/* Background glow */}
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '120px',
+                        height: '60px',
+                        background: 'radial-gradient(ellipse, rgba(255, 107, 53, 0.1) 0%, transparent 70%)',
+                        pointerEvents: 'none',
+                    }}
+                />
+
                 <div
                     style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '10px',
+                        gap: '12px',
+                        position: 'relative',
                     }}
                 >
                     <div
+                        className="animate-pulse-glow"
                         style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '8px',
-                            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: 'var(--radius-lg)',
+                            background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             color: 'white',
                             fontWeight: 700,
-                            fontSize: '14px',
+                            fontSize: '16px',
+                            boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)',
                         }}
                     >
                         S
                     </div>
                     <span
+                        className="text-gradient"
                         style={{
-                            color: 'white',
-                            fontSize: '18px',
-                            fontWeight: 600,
+                            fontSize: '20px',
+                            fontWeight: 700,
                             letterSpacing: '-0.02em',
                         }}
                     >
@@ -198,93 +365,121 @@ export function Sidebar() {
                 </div>
             </div>
 
-            {/* Navigation */}
+            {/* Enhanced Navigation */}
             <nav
                 style={{
                     flex: 1,
-                    padding: '16px 12px',
+                    padding: '20px 16px',
                     overflowY: 'auto',
                 }}
             >
-                <div style={{ marginBottom: '8px', padding: '0 12px' }}>
+                {/* Main Section */}
+                <div
+                    className="animate-slide-in-left animate-delay-200"
+                    style={{ marginBottom: '12px', padding: '0 16px' }}
+                >
                     <span
                         style={{
                             fontSize: '11px',
-                            fontWeight: 600,
-                            color: 'rgba(255,255,255,0.4)',
+                            fontWeight: 700,
+                            color: 'rgba(255,255,255,0.5)',
                             textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
+                            letterSpacing: '0.1em',
                         }}
                     >
                         Main
                     </span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    {navigationItems.slice(0, 3).map((item) => (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '32px' }}>
+                    {navigationItems.slice(0, 3).map((item, index) => (
                         <NavItemComponent
                             key={item.id}
                             item={item}
                             isActive={pathname === item.href}
+                            index={index}
+                            onModalClick={item.id === 'settings' ? onProfileSettingsClick : undefined}
                         />
                     ))}
                 </div>
 
-                <div style={{ marginTop: '24px', marginBottom: '8px', padding: '0 12px' }}>
+                {/* Administration Section */}
+                <div
+                    className="animate-slide-in-left animate-delay-600"
+                    style={{ marginBottom: '12px', padding: '0 16px' }}
+                >
                     <span
                         style={{
                             fontSize: '11px',
-                            fontWeight: 600,
-                            color: 'rgba(255,255,255,0.4)',
+                            fontWeight: 700,
+                            color: 'rgba(255,255,255,0.5)',
                             textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
+                            letterSpacing: '0.1em',
                         }}
                     >
                         Administration
                     </span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    {navigationItems.slice(3).map((item) => (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {navigationItems.slice(3).map((item, index) => (
                         <NavItemComponent
                             key={item.id}
                             item={item}
                             isActive={pathname === item.href}
+                            index={index + 3}
+                            onModalClick={item.id === 'settings' ? onProfileSettingsClick : undefined}
                         />
                     ))}
                 </div>
             </nav>
 
-            {/* Footer */}
+            {/* Enhanced Footer */}
             <div
+                className="animate-slide-in-left animate-delay-1000"
                 style={{
-                    padding: '16px',
-                    borderTop: '1px solid rgba(255,255,255,0.08)',
+                    padding: '20px',
+                    borderTop: '1px solid rgba(255, 107, 53, 0.1)',
                 }}
             >
                 <div
+                    className="glass glow-hover"
                     style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px',
-                        padding: '8px',
-                        borderRadius: '8px',
-                        backgroundColor: 'rgba(255,255,255,0.05)',
+                        gap: '10px',
+                        padding: '12px 16px',
+                        borderRadius: 'var(--radius-lg)',
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        transition: 'all var(--micro-duration) var(--micro-easing)',
                     }}
                 >
-                    <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="rgba(255,255,255,0.5)"
-                        strokeWidth="2"
-                    >
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M12 16v-4" />
-                        <path d="M12 8h.01" />
-                    </svg>
-                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
-                        v2.4.1
+                    <div className="animate-pulse-glow">
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="var(--accent)"
+                            strokeWidth="2"
+                        >
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 16v-4" />
+                            <path d="M12 8h.01" />
+                        </svg>
+                    </div>
+                    <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
+                        v2.4.1 Premium
                     </span>
+                    <div
+                        style={{
+                            marginLeft: 'auto',
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: 'var(--emerald-500)',
+                            boxShadow: '0 0 8px rgba(16, 185, 129, 0.5)',
+                        }}
+                    />
                 </div>
             </div>
         </aside>
