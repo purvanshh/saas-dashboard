@@ -79,6 +79,10 @@ export type ResourceAction =
   | 'project:update'
   | 'project:delete'
   | 'project:archive'
+  | 'endpoint:view'
+  | 'endpoint:create'
+  | 'endpoint:update'
+  | 'endpoint:delete'
   | 'user:view'
   | 'user:invite'
   | 'user:update_role'
@@ -120,6 +124,55 @@ export interface Project {
   updatedAt: Date;
 }
 
+// ============================================
+// ENDPOINT TYPES (matches UI)
+// ============================================
+
+export type EndpointMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
+export interface EndpointConfig {
+  id: string;
+  tenantId: string;
+  name: string;
+  description?: string;
+  method: EndpointMethod;
+  baseUrl: string;
+  path: string;
+  isActive: boolean;
+  requiresAuth: boolean;
+  rateLimitPerMin: number;
+  timeoutMs: number;
+  createdBy: string;
+  updatedBy?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+}
+
+export interface CreateEndpointInput {
+  name: string;
+  description?: string;
+  method: EndpointMethod;
+  baseUrl: string;
+  path: string;
+  isActive: boolean;
+  requiresAuth: boolean;
+  rateLimitPerMin: number;
+  timeoutMs: number;
+}
+
+export interface UpdateEndpointInput {
+  name?: string;
+  description?: string;
+  method?: EndpointMethod;
+  baseUrl?: string;
+  path?: string;
+  isActive?: boolean;
+  requiresAuth?: boolean;
+  rateLimitPerMin?: number;
+  timeoutMs?: number;
+}
+
 export interface CreateProjectInput {
   name: string;
   description?: string;
@@ -157,6 +210,9 @@ export type AuditableAction =
   | 'project.update'
   | 'project.delete'
   | 'project.archive'
+  | 'endpoint.create'
+  | 'endpoint.update'
+  | 'endpoint.delete'
   | 'user.invite'
   | 'user.role_change'
   | 'user.remove'
@@ -223,6 +279,24 @@ export interface UpdateProjectResponse {
 }
 
 export interface DeleteProjectResponse {
+  success: boolean;
+  message: string;
+}
+
+// Endpoint routes
+export interface ListEndpointsResponse {
+  endpoints: EndpointConfig[];
+}
+
+export interface CreateEndpointResponse {
+  endpoint: EndpointConfig;
+}
+
+export interface UpdateEndpointResponse {
+  endpoint: EndpointConfig;
+}
+
+export interface DeleteEndpointResponse {
   success: boolean;
   message: string;
 }
@@ -314,6 +388,26 @@ export interface Database {
           name: string;
           description: string | null;
           status: string;
+          created_by: string;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+      };
+      api_endpoints: {
+        Row: {
+          id: string;
+          tenant_id: string;
+          name: string;
+          description: string | null;
+          method: string;
+          base_url: string;
+          path: string;
+          is_active: boolean;
+          requires_auth: boolean;
+          rate_limit_per_min: number;
+          timeout_ms: number;
           created_by: string;
           updated_by: string | null;
           created_at: string;

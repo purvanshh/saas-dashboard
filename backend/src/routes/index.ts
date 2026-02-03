@@ -449,6 +449,215 @@ router.delete('/projects/:id',
 );
 
 // ============================================
+// ENDPOINT ROUTES
+// ============================================
+
+// GET /endpoints - List all endpoints in tenant
+router.get('/endpoints',
+  authenticateUser,
+  resolveTenantContext,
+  requirePermission('endpoint:view'),
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const { tenantId } = req.tenantContext!;
+
+    const { data: endpoints, error } = await supabase
+      .from('api_endpoints')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      errors.internal(res);
+      return;
+    }
+
+    res.json({ endpoints: endpoints || [] });
+  })
+);
+
+// POST /endpoints - Create new endpoint
+const createEndpointSchema = z.object({
+  name: z.string().min(1).max(255),
+  description: z.string().optional(),
+  method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']),
+  baseUrl: z.string().min(1),
+  path: z.string().min(1),
+  isActive: z.boolean(),
+  requiresAuth: z.boolean(),
+  rateLimitPerMin: z.number().int().positive(),
+  timeoutMs: z.number().int().positive(),
+});
+
+router.post('/endpoints',
+  authenticateUser,
+  resolveTenantContext,
+  requirePermission('endpoint:create'),
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const { tenantId } = req.tenantContext!;
+    const payload = createEndpointSchema.parse(req.body);
+
+    const { data: endpoint, error } = await supabase
+      .from('api_endpoints')
+      .insert({
+        tenant_id: tenantId,
+        name: payload.name,
+        description: payload.description,
+        method: payload.method,
+        base_url: payload.baseUrl,
+        path: payload.path,
+        is_active: payload.isActive,
+        requires_auth: payload.requiresAuth,
+        rate_limit_per_min: payload.rateLimitPerMin,
+        timeout_ms: payload.timeoutMs,
+        created_by: req.user.id,
+      })
+      .select()
+      .single();
+
+    if (error || !endpoint) {
+      errors.internal(res, 'Failed to create endpoint');
+      return;
+    }
+
+    writeAuditLog(req, {
+      action: 'endpoint.create',
+      resourceType: 'endpoint',
+      resourceId: endpoint.id,
+      resourceName: endpoint.name,
+      newState: endpoint,
+    });
+
+    res.status(201).json({ endpoint });
+  })
+);
+
+// PATCH /endpoints/:id - Update endpoint
+const updateEndpointSchema = z.object({
+  name: z.string().min(1).max(255).optional(),
+  description: z.string().optional(),
+  method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']).optional(),
+  baseUrl: z.string().min(1).optional(),
+  path: z.string().min(1).optional(),
+  isActive: z.boolean().optional(),
+  requiresAuth: z.boolean().optional(),
+  rateLimitPerMin: z.number().int().positive().optional(),
+  timeoutMs: z.number().int().positive().optional(),
+});
+
+router.patch('/endpoints/:id',
+  authenticateUser,
+  resolveTenantContext,
+  requirePermission('endpoint:update'),
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const { tenantId } = req.tenantContext!;
+    const endpointId = req.params.id;
+    const updates = updateEndpointSchema.parse(req.body);
+
+    const { data: currentEndpoint } = await supabase
+      .from('api_endpoints')
+      .select('*')
+      .eq('id', endpointId)
+      .eq('tenant_id', tenantId)
+      .is('deleted_at', null)
+      .single();
+
+    if (!currentEndpoint) {
+      errors.notFound(res, 'Endpoint');
+      return;
+    }
+
+    const { data: endpoint, error } = await supabase
+      .from('api_endpoints')
+      .update({
+        name: updates.name,
+        description: updates.description,
+        method: updates.method,
+        base_url: updates.baseUrl,
+        path: updates.path,
+        is_active: updates.isActive,
+        requires_auth: updates.requiresAuth,
+        rate_limit_per_min: updates.rateLimitPerMin,
+        timeout_ms: updates.timeoutMs,
+        updated_by: req.user.id,
+      })
+      .eq('id', endpointId)
+      .eq('tenant_id', tenantId)
+      .select()
+      .single();
+
+    if (error || !endpoint) {
+      errors.internal(res, 'Failed to update endpoint');
+      return;
+    }
+
+    writeAuditLog(req, {
+      action: 'endpoint.update',
+      resourceType: 'endpoint',
+      resourceId: endpointId,
+      resourceName: endpoint.name,
+      previousState: currentEndpoint,
+      newState: endpoint,
+    });
+
+    res.json({ endpoint });
+  })
+);
+
+// DELETE /endpoints/:id - Soft delete endpoint (Admin only)
+router.delete('/endpoints/:id',
+  authenticateUser,
+  resolveTenantContext,
+  requirePermission('endpoint:delete'),
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const { tenantId } = req.tenantContext!;
+    const endpointId = req.params.id;
+
+    const { data: endpoint } = await supabase
+      .from('api_endpoints')
+      .select('*')
+      .eq('id', endpointId)
+      .eq('tenant_id', tenantId)
+      .is('deleted_at', null)
+      .single();
+
+    if (!endpoint) {
+      errors.notFound(res, 'Endpoint');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('api_endpoints')
+      .update({
+        deleted_at: new Date().toISOString(),
+        is_active: false,
+        updated_by: req.user.id,
+      })
+      .eq('id', endpointId)
+      .eq('tenant_id', tenantId);
+
+    if (error) {
+      errors.internal(res, 'Failed to delete endpoint');
+      return;
+    }
+
+    writeAuditLog(req, {
+      action: 'endpoint.delete',
+      resourceType: 'endpoint',
+      resourceId: endpointId,
+      resourceName: endpoint.name,
+      previousState: endpoint,
+      newState: { deleted: true, deletedAt: new Date().toISOString() },
+    });
+
+    res.json({
+      success: true,
+      message: 'Endpoint deleted successfully',
+    });
+  })
+);
+
+// ============================================
 // AUDIT LOG ROUTES (Admin only)
 // ============================================
 

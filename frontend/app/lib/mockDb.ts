@@ -47,6 +47,24 @@ export interface Project {
     version: number;
 }
 
+export interface EndpointConfig {
+    id: string;
+    name: string;
+    description?: string;
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+    baseUrl: string;
+    path: string;
+    isActive: boolean;
+    requiresAuth: boolean;
+    rateLimitPerMin: number;
+    timeoutMs: number;
+    lastUpdated: string;
+    organizationId: string;
+    createdAt: string;
+    createdBy: string;
+    version: number;
+}
+
 export interface AuditLogEntry {
     id: string;
     userId: string;
@@ -69,6 +87,7 @@ export interface MockStore {
     organizations: Organization[];
     users: User[];
     projects: Project[];
+    endpoints: EndpointConfig[];
     auditLogs: AuditLogEntry[];
     memberships: Membership[];
     _version: number;
@@ -133,6 +152,116 @@ const seedProjects: Project[] = [
     { id: 'proj_13', name: 'GDPR Compliance', description: 'EU data protection updates', status: 'completed', lastUpdated: '1 month ago', memberCount: 4, organizationId: 'org_3', createdAt: '2024-11-01', createdBy: 'user_8', version: 1 },
 ];
 
+const seedEndpoints: EndpointConfig[] = [
+    // Org 1: Acme Corp
+    {
+        id: 'ep_1',
+        name: 'Billing Webhook',
+        description: 'Receives billing events from payment provider',
+        method: 'POST',
+        baseUrl: 'https://api.acme.com',
+        path: '/webhooks/billing',
+        isActive: true,
+        requiresAuth: true,
+        rateLimitPerMin: 120,
+        timeoutMs: 2500,
+        lastUpdated: '2 hours ago',
+        organizationId: 'org_1',
+        createdAt: '2025-01-12',
+        createdBy: 'user_1',
+        version: 1,
+    },
+    {
+        id: 'ep_2',
+        name: 'Usage Metrics',
+        description: 'Streams daily usage metrics for analytics',
+        method: 'GET',
+        baseUrl: 'https://api.acme.com',
+        path: '/metrics/usage',
+        isActive: true,
+        requiresAuth: false,
+        rateLimitPerMin: 60,
+        timeoutMs: 2000,
+        lastUpdated: '1 day ago',
+        organizationId: 'org_1',
+        createdAt: '2025-01-20',
+        createdBy: 'user_2',
+        version: 1,
+    },
+
+    // Org 2: TechStart Inc
+    {
+        id: 'ep_3',
+        name: 'User Sync',
+        description: 'Push new signups to the CRM',
+        method: 'POST',
+        baseUrl: 'https://api.techstart.io',
+        path: '/integrations/user-sync',
+        isActive: true,
+        requiresAuth: true,
+        rateLimitPerMin: 90,
+        timeoutMs: 3000,
+        lastUpdated: '3 hours ago',
+        organizationId: 'org_2',
+        createdAt: '2025-02-02',
+        createdBy: 'user_4',
+        version: 1,
+    },
+    {
+        id: 'ep_4',
+        name: 'Feature Flags',
+        description: 'Remote config for feature gating',
+        method: 'GET',
+        baseUrl: 'https://api.techstart.io',
+        path: '/flags',
+        isActive: false,
+        requiresAuth: true,
+        rateLimitPerMin: 30,
+        timeoutMs: 1800,
+        lastUpdated: '2 days ago',
+        organizationId: 'org_2',
+        createdAt: '2025-01-26',
+        createdBy: 'user_5',
+        version: 1,
+    },
+
+    // Org 3: Global Dynamics
+    {
+        id: 'ep_5',
+        name: 'ERP Export',
+        description: 'Nightly export to the ERP system',
+        method: 'POST',
+        baseUrl: 'https://api.globaldynamics.com',
+        path: '/erp/export',
+        isActive: true,
+        requiresAuth: true,
+        rateLimitPerMin: 45,
+        timeoutMs: 4000,
+        lastUpdated: '6 hours ago',
+        organizationId: 'org_3',
+        createdAt: '2024-12-08',
+        createdBy: 'user_7',
+        version: 1,
+    },
+    {
+        id: 'ep_6',
+        name: 'Audit Stream',
+        description: 'Read-only stream of audit events',
+        method: 'GET',
+        baseUrl: 'https://api.globaldynamics.com',
+        path: '/audit/stream',
+        isActive: true,
+        requiresAuth: false,
+        rateLimitPerMin: 25,
+        timeoutMs: 2200,
+        lastUpdated: '1 week ago',
+        organizationId: 'org_3',
+        createdAt: '2024-12-20',
+        createdBy: 'user_8',
+        version: 1,
+    },
+];
+
 const seedAuditLogs: AuditLogEntry[] = [
     { id: 'log_1', userId: 'user_1', userName: 'Sarah Chen', action: 'invited', target: 'james@acme.com', timestamp: '2 min ago', organizationId: 'org_1', createdAt: Date.now() - 120000 },
     { id: 'log_2', userId: 'user_2', userName: 'Michael Torres', action: 'updated', target: 'Project Alpha settings', timestamp: '15 min ago', organizationId: 'org_1', createdAt: Date.now() - 900000 },
@@ -186,6 +315,7 @@ function getDefaultStore(): MockStore {
         organizations: [...seedOrganizations],
         users: [...seedUsers],
         projects: [...seedProjects],
+        endpoints: [...seedEndpoints],
         auditLogs: [...seedAuditLogs],
         memberships: [...seedMemberships],
         _version: 1,
@@ -227,9 +357,18 @@ export function initializeStore(): MockStore {
 
     const loaded = loadFromStorage();
     store = loaded || getDefaultStore();
+    const needsEndpointSeed = !store.endpoints;
+
+    // Backward-compatible hydration for older localStorage data
+    if (needsEndpointSeed) {
+        store.endpoints = [...seedEndpoints];
+    }
 
     // Save if we just created a new one
     if (!loaded) {
+        saveToStorage(store);
+    }
+    if (loaded && needsEndpointSeed) {
         saveToStorage(store);
     }
 
@@ -427,6 +566,124 @@ export function archiveProject(
     actorName: string
 ): Project | null {
     return updateProject(projectId, { status: 'archived' }, actorId, actorName);
+}
+
+// ============================================
+// ENDPOINTS CRUD
+// ============================================
+
+export function getEndpoints(tenantId: string): EndpointConfig[] {
+    return getStore().endpoints.filter(e => e.organizationId === tenantId);
+}
+
+export function getEndpoint(endpointId: string): EndpointConfig | undefined {
+    return getStore().endpoints.find(e => e.id === endpointId);
+}
+
+export interface CreateEndpointPayload {
+    name: string;
+    description?: string;
+    method: EndpointConfig['method'];
+    baseUrl: string;
+    path: string;
+    isActive: boolean;
+    requiresAuth: boolean;
+    rateLimitPerMin: number;
+    timeoutMs: number;
+}
+
+export function createEndpoint(
+    tenantId: string,
+    payload: CreateEndpointPayload,
+    actorId: string,
+    actorName: string
+): EndpointConfig {
+    const s = getStore();
+    const endpoint: EndpointConfig = {
+        id: generateId('ep'),
+        name: payload.name,
+        description: payload.description,
+        method: payload.method,
+        baseUrl: payload.baseUrl,
+        path: payload.path,
+        isActive: payload.isActive,
+        requiresAuth: payload.requiresAuth,
+        rateLimitPerMin: payload.rateLimitPerMin,
+        timeoutMs: payload.timeoutMs,
+        lastUpdated: 'Just now',
+        organizationId: tenantId,
+        createdAt: new Date().toISOString(),
+        createdBy: actorId,
+        version: 1,
+    };
+    s.endpoints.push(endpoint);
+
+    logAuditEvent(actorId, actorName, 'created endpoint', endpoint.name, tenantId);
+
+    persist();
+    return endpoint;
+}
+
+export interface UpdateEndpointPayload {
+    name?: string;
+    description?: string;
+    method?: EndpointConfig['method'];
+    baseUrl?: string;
+    path?: string;
+    isActive?: boolean;
+    requiresAuth?: boolean;
+    rateLimitPerMin?: number;
+    timeoutMs?: number;
+    expectedVersion?: number;
+}
+
+export function updateEndpoint(
+    endpointId: string,
+    payload: UpdateEndpointPayload,
+    actorId: string,
+    actorName: string
+): EndpointConfig | null {
+    const s = getStore();
+    const idx = s.endpoints.findIndex(e => e.id === endpointId);
+    if (idx === -1) return null;
+
+    const endpoint = s.endpoints[idx];
+
+    if (payload.expectedVersion !== undefined && endpoint.version !== payload.expectedVersion) {
+        throw new Error('409: Conflict - Data has changed. Please reload.');
+    }
+
+    const updated: EndpointConfig = {
+        ...endpoint,
+        ...payload,
+        lastUpdated: 'Just now',
+        version: endpoint.version + 1,
+    };
+
+    s.endpoints[idx] = updated;
+
+    logAuditEvent(actorId, actorName, 'updated endpoint', updated.name, endpoint.organizationId);
+
+    persist();
+    return updated;
+}
+
+export function deleteEndpoint(
+    endpointId: string,
+    actorId: string,
+    actorName: string
+): boolean {
+    const s = getStore();
+    const idx = s.endpoints.findIndex(e => e.id === endpointId);
+    if (idx === -1) return false;
+
+    const endpoint = s.endpoints[idx];
+    s.endpoints.splice(idx, 1);
+
+    logAuditEvent(actorId, actorName, 'deleted endpoint', endpoint.name, endpoint.organizationId);
+
+    persist();
+    return true;
 }
 
 // ============================================

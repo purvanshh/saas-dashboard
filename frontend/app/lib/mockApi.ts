@@ -189,6 +189,46 @@ export const auditApi = {
 };
 
 // ============================================
+// ENDPOINTS API
+// ============================================
+
+export const endpointsApi = {
+    async list(tenantId: string): Promise<ApiResponse<db.EndpointConfig[]>> {
+        return apiCall(() => db.getEndpoints(tenantId));
+    },
+
+    async get(endpointId: string): Promise<ApiResponse<db.EndpointConfig | undefined>> {
+        return apiCall(() => db.getEndpoint(endpointId));
+    },
+
+    async create(
+        tenantId: string,
+        payload: db.CreateEndpointPayload,
+        actorId: string,
+        actorName: string
+    ): Promise<ApiResponse<db.EndpointConfig>> {
+        return apiCall(() => db.createEndpoint(tenantId, payload, actorId, actorName));
+    },
+
+    async update(
+        endpointId: string,
+        payload: db.UpdateEndpointPayload,
+        actorId: string,
+        actorName: string
+    ): Promise<ApiResponse<db.EndpointConfig | null>> {
+        return apiCall(() => db.updateEndpoint(endpointId, payload, actorId, actorName));
+    },
+
+    async delete(
+        endpointId: string,
+        actorId: string,
+        actorName: string
+    ): Promise<ApiResponse<boolean>> {
+        return apiCall(() => db.deleteEndpoint(endpointId, actorId, actorName));
+    },
+};
+
+// ============================================
 // ORGANIZATIONS API
 // ============================================
 
@@ -214,6 +254,7 @@ export const mockApi = {
     projects: projectsApi,
     users: usersApi,
     audit: auditApi,
+    endpoints: endpointsApi,
     organizations: organizationsApi,
 
     // Utility to reset store

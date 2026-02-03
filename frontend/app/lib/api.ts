@@ -135,6 +135,24 @@ export interface Project {
   updatedAt: string;
 }
 
+export interface EndpointConfig {
+  id: string;
+  tenantId: string;
+  name: string;
+  description?: string;
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  baseUrl: string;
+  path: string;
+  isActive: boolean;
+  requiresAuth: boolean;
+  rateLimitPerMin: number;
+  timeoutMs: number;
+  createdBy: string;
+  updatedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface TenantMember {
   id: string;
   email: string;
@@ -265,6 +283,35 @@ class ApiClient {
 
   async deleteProject(id: string): Promise<ApiResponse<{ success: boolean }>> {
     return this.delete<{ success: boolean }>(`/api/projects/${id}`);
+  }
+
+  async getEndpoints(): Promise<ApiResponse<{ endpoints: EndpointConfig[] }>> {
+    return this.get<{ endpoints: EndpointConfig[] }>('/api/endpoints');
+  }
+
+  async createEndpoint(payload: {
+    name: string;
+    description?: string;
+    method: EndpointConfig['method'];
+    baseUrl: string;
+    path: string;
+    isActive: boolean;
+    requiresAuth: boolean;
+    rateLimitPerMin: number;
+    timeoutMs: number;
+  }): Promise<ApiResponse<{ endpoint: EndpointConfig }>> {
+    return this.post<{ endpoint: EndpointConfig }>('/api/endpoints', payload);
+  }
+
+  async updateEndpoint(
+    id: string,
+    updates: Partial<EndpointConfig>
+  ): Promise<ApiResponse<{ endpoint: EndpointConfig }>> {
+    return this.patch<{ endpoint: EndpointConfig }>(`/api/endpoints/${id}`, updates);
+  }
+
+  async deleteEndpoint(id: string): Promise<ApiResponse<{ success: boolean }>> {
+    return this.delete<{ success: boolean }>(`/api/endpoints/${id}`);
   }
 
   async getUsers(): Promise<ApiResponse<{ users: TenantMember[] }>> {

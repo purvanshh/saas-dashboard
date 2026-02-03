@@ -61,6 +61,7 @@ export const navigationItems: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', href: '/' },
   { id: 'analytics', label: 'Analytics', icon: 'analytics', href: '/analytics' },
   { id: 'projects', label: 'Projects', icon: 'projects', href: '/projects' },
+  { id: 'endpoints', label: 'Endpoints', icon: 'link', href: '/endpoints', requiredPermission: 'canEdit' },
   { id: 'users', label: 'Users', icon: 'users', href: '/users', requiredPermission: 'canManageUsers' },
   { id: 'settings', label: 'Profile Settings', icon: 'settings', href: '/settings' },
   { id: 'billing', label: 'Billing', icon: 'billing', href: '/billing', requiredPermission: 'canViewBilling' },
@@ -106,6 +107,11 @@ export type ActionType =
   | 'project.delete'
   | 'project.archive'
   | 'project.view'
+  // Endpoint actions
+  | 'endpoint.create'
+  | 'endpoint.edit'
+  | 'endpoint.delete'
+  | 'endpoint.view'
   // User actions
   | 'user.invite'
   | 'user.changeRole'
@@ -127,6 +133,12 @@ const actionPermissions: Record<ActionType, Role[]> = {
   'project.delete': ['admin'],
   'project.archive': ['admin', 'manager'],
   'project.view': ['admin', 'manager', 'viewer'],
+
+  // Endpoint actions
+  'endpoint.create': ['admin', 'manager'],
+  'endpoint.edit': ['admin', 'manager'],
+  'endpoint.delete': ['admin'],
+  'endpoint.view': ['admin', 'manager', 'viewer'],
 
   // User actions
   'user.invite': ['admin'],
@@ -179,6 +191,9 @@ export function getPermissionDeniedMessage(action: ActionType): string {
     'project.edit': 'You do not have permission to edit projects.',
     'project.delete': 'Only administrators can delete projects.',
     'project.archive': 'You do not have permission to archive projects.',
+    'endpoint.create': 'You do not have permission to create endpoints.',
+    'endpoint.edit': 'You do not have permission to edit endpoints.',
+    'endpoint.delete': 'Only administrators can delete endpoints.',
     'user.invite': 'Only administrators can invite users.',
     'user.changeRole': 'Only administrators can change user roles.',
     'user.deactivate': 'Only administrators can deactivate users.',

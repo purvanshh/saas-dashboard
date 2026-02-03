@@ -96,6 +96,26 @@ CREATE TABLE projects (
     deleted_at TIMESTAMPTZ DEFAULT NULL
 );
 
+-- API Endpoints
+CREATE TABLE api_endpoints (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    method VARCHAR(10) NOT NULL CHECK (method IN ('GET', 'POST', 'PUT', 'PATCH', 'DELETE')),
+    base_url TEXT NOT NULL,
+    path TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT true,
+    requires_auth BOOLEAN DEFAULT true,
+    rate_limit_per_min INTEGER DEFAULT 60,
+    timeout_ms INTEGER DEFAULT 2500,
+    created_by UUID NOT NULL REFERENCES users(id),
+    updated_by UUID REFERENCES users(id),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ DEFAULT NULL
+);
+
 -- ============================================
 -- AUDIT LOGGING (Immutable)
 -- ============================================
@@ -131,6 +151,9 @@ CREATE INDEX idx_tenant_users_role ON tenant_users(tenant_id, role);
 CREATE INDEX idx_projects_tenant_id ON projects(tenant_id);
 CREATE INDEX idx_projects_tenant_status ON projects(tenant_id, status) WHERE deleted_at IS NULL;
 CREATE INDEX idx_projects_created_by ON projects(created_by);
+CREATE INDEX idx_api_endpoints_tenant_id ON api_endpoints(tenant_id);
+CREATE INDEX idx_api_endpoints_active ON api_endpoints(tenant_id, is_active) WHERE deleted_at IS NULL;
+CREATE INDEX idx_api_endpoints_created_by ON api_endpoints(created_by);
 
 -- Audit log indices
 CREATE INDEX idx_audit_logs_tenant_id ON audit_logs(tenant_id);
@@ -143,6 +166,7 @@ CREATE INDEX idx_tenants_not_deleted ON tenants(id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_users_not_deleted ON users(id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_tenant_users_active ON tenant_users(tenant_id, user_id) WHERE is_active = true AND deleted_at IS NULL;
 CREATE INDEX idx_projects_not_deleted ON projects(tenant_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_api_endpoints_not_deleted ON api_endpoints(tenant_id) WHERE deleted_at IS NULL;
 
 -- ============================================
 -- SEED DATA
@@ -156,6 +180,11 @@ INSERT INTO permissions (resource, action, description) VALUES
 ('project', 'update', 'Update existing projects'),
 ('project', 'delete', 'Delete projects (soft delete)'),
 ('project', 'archive', 'Archive projects'),
+-- Endpoint permissions
+('endpoint', 'view', 'View API endpoints within tenant'),
+('endpoint', 'create', 'Create API endpoints'),
+('endpoint', 'update', 'Update API endpoints'),
+('endpoint', 'delete', 'Delete API endpoints'),
 -- User management permissions
 ('user', 'view', 'View tenant users'),
 ('user', 'invite', 'Invite users to tenant'),
@@ -179,6 +208,7 @@ SELECT 'admin', id FROM permissions;
 INSERT INTO role_permissions (role, permission_id)
 SELECT 'manager', id FROM permissions 
 WHERE resource = 'project' 
+   OR (resource = 'endpoint' AND action IN ('view', 'create', 'update'))
    OR (resource = 'user' AND action = 'view')
    OR (resource = 'org' AND action IN ('view', 'billing'));
 
@@ -193,12 +223,22 @@ WHERE action = 'view';
 
 -- Enable RLS on all tenant-scoped tables
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE api_endpoints ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tenant_users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policies for projects
 -- Users can only see projects in their tenant
 CREATE POLICY tenant_isolation_projects ON projects
+    USING (tenant_id IN (
+        SELECT tenant_id FROM tenant_users 
+        WHERE user_id = auth.uid()::uuid 
+        AND is_active = true 
+        AND deleted_at IS NULL
+    ));
+
+-- Users can only see endpoints in their tenant
+CREATE POLICY tenant_isolation_api_endpoints ON api_endpoints
     USING (tenant_id IN (
         SELECT tenant_id FROM tenant_users 
         WHERE user_id = auth.uid()::uuid 
@@ -230,6 +270,9 @@ CREATE TRIGGER update_tenant_users_updated_at BEFORE UPDATE ON tenant_users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_projects_updated_at BEFORE UPDATE ON projects
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_api_endpoints_updated_at BEFORE UPDATE ON api_endpoints
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
