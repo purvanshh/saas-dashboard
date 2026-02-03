@@ -32,6 +32,7 @@ This repository showcases a complete SaaS platform implementation with a sophist
 - **UI-Level Security**: Dynamic UI rendering based on user permissions
 - **Action-Level Guards**: Centralized permission checking for all operations
 - **Permission Feedback**: Clear visual indicators and explanations for restricted actions
+- **Endpoint Governance**: Admins and managers can create/edit endpoints, admins can delete, viewers are read-only
 
 ### 3. Advanced Mock Database System
 - **In-Memory Database**: Sophisticated data layer with relationships and constraints
@@ -40,7 +41,7 @@ This repository showcases a complete SaaS platform implementation with a sophist
 - **Rich Seed Data**: Pre-populated with realistic business data across multiple organizations
 - **Transaction Support**: Atomic operations with rollback capabilities
 - **Data Validation**: Schema validation and business rule enforcement
-- **Migration System**: Versioned data structure with automatic migrations
+- **Migration System**: Versioned data structure with automatic migrations (including endpoint data)
 
 ### 4. Comprehensive Audit System
 - **Action Tracking**: Automatic logging of all user actions with detailed metadata
@@ -57,6 +58,12 @@ This repository showcases a complete SaaS platform implementation with a sophist
 - **Modal Management**: Centralized modal system with proper focus management
 - **Accessibility**: WCAG 2.1 compliant with keyboard navigation and screen reader support
 - **Dark Mode Ready**: CSS custom properties prepared for theme switching
+- **Endpoint Console**: Visual endpoint configuration with role-gated controls
+
+### 6. Endpoint Configuration (New)
+- **Visual Endpoint Manager**: Create, edit, and pause API endpoints from a dedicated UI
+- **Role-Based Control**: Admin/Manager can create and edit; Admin can delete; Viewer is read-only
+- **Mock + Backend Parity**: Frontend mock API matches backend REST endpoints
 
 ---
 
@@ -81,6 +88,12 @@ This repository showcases a complete SaaS platform implementation with a sophist
 - **Security**: Helmet, CORS, Rate limiting
 - **Logging**: Winston with structured logging
 - **Validation**: Zod schema validation
+
+### Endpoint API (Backend Reference)
+- `GET /api/endpoints` — List endpoints (viewer+)
+- `POST /api/endpoints` — Create endpoint (admin/manager)
+- `PATCH /api/endpoints/:id` — Update endpoint (admin/manager)
+- `DELETE /api/endpoints/:id` — Soft delete endpoint (admin only)
 
 ### Development Tools
 - **Package Manager**: npm with workspaces
@@ -117,6 +130,9 @@ saas-dashboard/
 │   │   │   ├── projects/       # Project management components
 │   │   │   │   ├── ProjectFormModal.tsx
 │   │   │   │   └── ProjectList.tsx
+│   │   │   ├── endpoints/      # Endpoint configuration components
+│   │   │   │   ├── EndpointFormModal.tsx
+│   │   │   │   └── EndpointList.tsx
 │   │   │   ├── settings/       # Settings and configuration
 │   │   │   │   └── OrgSettingsForm.tsx
 │   │   │   ├── ui/            # Reusable UI primitives
@@ -143,6 +159,7 @@ saas-dashboard/
 │   │   ├── analytics/         # Analytics page
 │   │   ├── audit/            # Audit logs page
 │   │   ├── billing/          # Billing management page
+│   │   ├── endpoints/        # Endpoint configuration page
 │   │   ├── projects/         # Project management page
 │   │   ├── settings/         # Organization settings page
 │   │   ├── users/            # User management page
@@ -165,6 +182,7 @@ saas-dashboard/
 │   │   │   ├── rbac.ts      # Role-based access control
 │   │   │   └── tenant.ts    # Multi-tenant middleware
 │   │   ├── routes/          # API route handlers
+│   │   │   └── index.ts      # Includes /endpoints CRUD routes
 │   │   ├── services/        # Business logic services
 │   │   │   └── audit.ts     # Audit logging service
 │   │   ├── types/           # TypeScript type definitions
