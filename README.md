@@ -214,7 +214,7 @@ saas-dashboard/
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/saas-dashboard.git
+   git clone https://github.com/purvanshh/saas-dashboard.git
    cd saas-dashboard
    ```
 
@@ -491,9 +491,9 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## 📞 Support
 
 For questions, issues, or contributions:
-- **GitHub Issues**: [Create an issue](https://github.com/your-username/saas-dashboard/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/saas-dashboard/discussions)
-- **Email**: your-email@domain.com
+- **GitHub Issues**: [Create an issue](https://github.com/purvanshh/saas-dashboard/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/purvanshh/saas-dashboard/discussions)
+- **Email**: purvanshhsahu@gmail.com
 
 ---
 
